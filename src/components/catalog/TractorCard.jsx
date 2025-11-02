@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, DollarSign, ArrowRight } from 'lucide-react';
+import { Zap, DollarSign, ArrowRight, Calculator } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
@@ -89,6 +89,15 @@ export const TractorCard = ({ tractor }) => {
           >
             Ver Detalles
             <ArrowRight size={18} />
+          </Button>
+          <Button
+            as={Link}
+            to={`/financiamiento?tractor=${tractor.id}`}
+            variant="secondary"
+            className="w-full"
+          >
+            <Calculator size={18} />
+            Calcular Financiamiento
           </Button>
           <Button
             as={Link}

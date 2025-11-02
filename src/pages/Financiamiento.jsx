@@ -1,46 +1,31 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, DollarSign, CreditCard, Percent, TrendingDown } from 'lucide-react';
+import { 
+  Calculator, 
+  CreditCard, 
+  Shield, 
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Phone
+} from 'lucide-react';
 import { Button } from '../components/common/Button';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { planesFinanciamiento, COSTOS_ADICIONALES } from '../data/planesFinanciamiento';
+import { FinancingPlanCard } from '../components/financing/FinancingPlanCard';
+import { AdvancedCalculator } from '../components/financing/AdvancedCalculator';
 
 export const Financiamiento = () => {
-  const [monto, setMonto] = useState(20000);
-  const [modalidad, setModalidad] = useState('cuotas');
+  const [searchParams] = useSearchParams();
+  const preSelectedTractorId = searchParams.get('tractor');
+  const preSelectedPlanId = searchParams.get('plan');
+  
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showCalculator, setShowCalculator] = useState(true);
 
-  // Cálculos
-  const igtf = 0.03; // 3%
-  const montoConIGTF = monto * (1 + igtf);
-  const cuotaMensual = monto / 6;
-
-  const planes = [
-    {
-      titulo: '6 Cuotas Sin Interés',
-      descripcion: 'Paga tu tractor en 6 meses sin intereses',
-      icono: CreditCard,
-      monto: cuotaMensual,
-      total: monto,
-      ventajas: [
-        'Sin intereses',
-        'Sin comisiones',
-        'Aprobación rápida',
-        'Sin requisitos complejos'
-      ]
-    },
-    {
-      titulo: 'Pago de Contado + IGTF',
-      descripcion: 'Paga en una sola exhibición y ahorra',
-      icono: DollarSign,
-      monto: montoConIGTF,
-      total: montoConIGTF,
-      ventajas: [
-        'Precio preferencial',
-        'Entrega inmediata',
-        'Sin trámites de financiamiento',
-        'IGTF del 3% incluido'
-      ]
-    }
-  ];
+  // Filtrar planes (excluir el informativo)
+  const planesActivos = planesFinanciamiento.filter(p => p.tipo !== 'informacion');
+  const planCostosAdicionales = planesFinanciamiento.find(p => p.tipo === 'informacion');
 
   return (
     <div className="pt-24 pb-16 min-h-screen bg-gray-50">
@@ -52,231 +37,307 @@ export const Financiamiento = () => {
           className="text-center mb-12"
         >
           <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Opciones de Financiamiento
+            Planes de Financiamiento
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Facilitamos la compra de tu tractor con planes flexibles de pago
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Facilitamos la compra de tu tractor con 9 planes flexibles diseñados para cada necesidad. 
+            Desde pagos de contado hasta financiamientos a largo plazo.
           </p>
         </motion.div>
 
-        {/* Calculadora */}
+        {/* Calculadora Interactiva */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl shadow-lg p-8 mb-12 max-w-4xl mx-auto"
+          className="mb-16"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <Calculator className="text-bel-green-500" size={32} />
-            <h2 className="text-2xl font-bold text-gray-900">Calcula tu Financiamiento</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-gray-900">Calculadora Interactiva</h2>
+            <button
+              onClick={() => setShowCalculator(!showCalculator)}
+              className="text-bel-green-500 hover:text-bel-green-600 font-semibold"
+            >
+              {showCalculator ? 'Ocultar' : 'Mostrar'}
+            </button>
           </div>
-
-          {/* Monto Input */}
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Monto del Tractor (USD)
-            </label>
-            <input
-              type="range"
-              min="10000"
-              max="100000"
-              step="1000"
-              value={monto}
-              onChange={(e) => setMonto(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-bel-green-500"
+          
+          {showCalculator && (
+            <AdvancedCalculator 
+              preSelectedTractorId={preSelectedTractorId}
+              preSelectedPlanId={preSelectedPlanId}
             />
-            <div className="flex justify-between mt-2">
-              <span className="text-sm text-gray-600">$10,000</span>
-              <span className="text-2xl font-bold text-bel-green-500">
-                ${monto.toLocaleString()}
-              </span>
-              <span className="text-sm text-gray-600">$100,000</span>
-            </div>
-          </div>
+          )}
+        </motion.div>
 
-          {/* Modalidad */}
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Modalidad de Pago
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => setModalidad('cuotas')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  modalidad === 'cuotas'
-                    ? 'border-bel-green-500 bg-bel-green-50'
-                    : 'border-gray-200 hover:border-bel-green-300'
-                }`}
+        {/* Todos los Planes */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-16"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Nuestros 9 Planes de Financiamiento
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {planesActivos.map((plan, index) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + index * 0.05 }}
               >
-                <CreditCard className={`mb-2 ${modalidad === 'cuotas' ? 'text-bel-green-500' : 'text-gray-400'}`} size={24} />
-                <div className="font-semibold text-gray-900">6 Cuotas</div>
-                <div className="text-sm text-gray-600">Sin interés</div>
-              </button>
-              <button
-                onClick={() => setModalidad('contado')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  modalidad === 'contado'
-                    ? 'border-bel-green-500 bg-bel-green-50'
-                    : 'border-gray-200 hover:border-bel-green-300'
-                }`}
-              >
-                <DollarSign className={`mb-2 ${modalidad === 'contado' ? 'text-bel-green-500' : 'text-gray-400'}`} size={24} />
-                <div className="font-semibold text-gray-900">Contado</div>
-                <div className="text-sm text-gray-600">+ IGTF 3%</div>
-              </button>
-            </div>
+                <FinancingPlanCard
+                  plan={plan}
+                  onSelect={setSelectedPlan}
+                  isSelected={selectedPlan?.id === plan.id}
+                />
+              </motion.div>
+            ))}
           </div>
+        </motion.div>
 
-          {/* Resultado */}
-          <div className="bg-bel-green-50 rounded-xl p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {modalidad === 'cuotas' ? (
-                <>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Cuota Mensual</div>
-                    <div className="text-3xl font-bold text-bel-green-500">
-                      ${cuotaMensual.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">6 cuotas sin interés</div>
+        {/* Costos Adicionales */}
+        {planCostosAdicionales && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-16"
+          >
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <AlertCircle className="text-bel-yellow" size={28} />
+                Costos Adicionales a Considerar
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="text-sm text-gray-600 mb-1">IVA</div>
+                  <div className="text-3xl font-bold text-gray-900">16%</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Impuesto al Valor Agregado
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Total a Pagar</div>
-                    <div className="text-3xl font-bold text-gray-900">
-                      ${monto.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-bel-green-500 mt-1">Sin intereses</div>
+                </div>
+                
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="text-sm text-gray-600 mb-1">IGTF</div>
+                  <div className="text-3xl font-bold text-gray-900">3%</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Solo en pagos de contado en divisas
                   </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Monto Base</div>
-                    <div className="text-3xl font-bold text-gray-900">
-                      ${monto.toLocaleString()}
-                    </div>
+                </div>
+                
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="text-sm text-gray-600 mb-1">Placa/INTT</div>
+                  <div className="text-3xl font-bold text-gray-900">$440</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Costo fijo de emplacamiento
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Total con IGTF (3%)</div>
-                    <div className="text-3xl font-bold text-bel-green-500">
-                      ${montoConIGTF.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      + ${(monto * igtf).toLocaleString()} IGTF
-                    </div>
+                </div>
+                
+                <div className="p-4 bg-bel-green-50 rounded-xl border-2 border-bel-green-200">
+                  <div className="text-sm text-bel-green-700 mb-1">Seguro</div>
+                  <div className="text-3xl font-bold text-bel-green-600">Incluido</div>
+                  <div className="text-xs text-bel-green-600 mt-2">
+                    1 año de cobertura
                   </div>
-                </>
-              )}
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-bel-yellow rounded">
+                <p className="text-sm text-gray-700">
+                  <strong>Importante:</strong> El IVA se aplica a todos los planes. El IGTF solo aplica 
+                  en pagos de contado en divisas según normativa SENIAT. La placa es un costo único de 
+                  emplacamiento. El seguro está incluido por 1 año en todos los planes.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Beneficios de Financiar con BEL */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-16"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            ¿Por qué Financiar con Tractores BEL?
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+              <div className="w-16 h-16 bg-bel-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="text-bel-green-500" size={32} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Aprobación Rápida</h3>
+              <p className="text-sm text-gray-600">
+                Respuesta en 48-72 horas con documentación completa
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="text-blue-500" size={32} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Planes Flexibles</h3>
+              <p className="text-sm text-gray-600">
+                9 opciones diferentes para adaptarse a tu flujo de caja
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="text-purple-500" size={32} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Seguro Incluido</h3>
+              <p className="text-sm text-gray-600">
+                Cobertura completa por 1 año sin costo adicional
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="text-orange-500" size={32} />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">Sin Complicaciones</h3>
+              <p className="text-sm text-gray-600">
+                Proceso simple con asesoría personalizada
+              </p>
             </div>
           </div>
         </motion.div>
 
-        {/* Planes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          {planes.map((plan, index) => {
-            const Icon = plan.icono;
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className="bg-white rounded-2xl shadow-lg p-8 border-2 border-transparent hover:border-bel-green-500 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-bel-green-100 rounded-xl">
-                    <Icon className="text-bel-green-500" size={28} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{plan.titulo}</h3>
-                    <p className="text-sm text-gray-600">{plan.descripcion}</p>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <div className="text-sm text-gray-600 mb-1">
-                    {index === 0 ? 'Cuota Mensual' : 'Pago Único'}
-                  </div>
-                  <div className="text-4xl font-bold text-bel-green-500">
-                    ${plan.monto.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <div className="text-sm font-semibold text-gray-700">Ventajas:</div>
-                  {plan.ventajas.map((ventaja, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-bel-green-500 rounded-full" />
-                      <span className="text-sm text-gray-600">{ventaja}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Button as={Link} to="/quiz" className="w-full">
-                  Solicitar Cotización
-                </Button>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Información Adicional */}
+        {/* Requisitos Generales */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto"
+          transition={{ delay: 0.6 }}
+          className="mb-16"
         >
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Requisitos para Financiamiento</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Documentos Necesarios:</h4>
-              <ul className="space-y-2 text-gray-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">•</span>
-                  <span>Cédula de identidad o RIF</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">•</span>
-                  <span>Registro mercantil (persona jurídica)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">•</span>
-                  <span>Comprobante de domicilio</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">•</span>
-                  <span>Referencias bancarias</span>
-                </li>
-              </ul>
+          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Requisitos Generales</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <CheckCircle size={20} className="text-bel-green-500" />
+                  Personas Naturales
+                </h4>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Cédula de identidad vigente</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Comprobante de domicilio (recibo de servicios)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Referencias personales y bancarias</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Comprobante de ingresos</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <CheckCircle size={20} className="text-bel-green-500" />
+                  Personas Jurídicas
+                </h4>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>RIF y Registro Mercantil actualizado</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Acta constitutiva y estatutos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Estados financieros recientes</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-bel-green-500 mt-1">•</span>
+                    <span>Referencias comerciales y bancarias</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Proceso Rápido:</h4>
-              <ul className="space-y-2 text-gray-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">1.</span>
-                  <span>Solicita tu cotización en línea</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">2.</span>
-                  <span>Nuestro asesor te contacta en 24h</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">3.</span>
-                  <span>Aprobación en 48-72 horas</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-bel-green-500 mt-1">4.</span>
-                  <span>Entrega programada del tractor</span>
-                </li>
-              </ul>
+
+            <div className="mt-8 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+              <p className="text-sm text-blue-900">
+                <strong>Nota:</strong> Los requisitos específicos pueden variar según el plan seleccionado 
+                y el monto del financiamiento. Nuestros asesores te guiarán en todo el proceso.
+              </p>
             </div>
           </div>
+        </motion.div>
 
-          <div className="mt-8 p-4 bg-bel-yellow/10 border-l-4 border-bel-yellow rounded">
-            <p className="text-sm text-gray-700">
-              <strong>Nota:</strong> El IGTF (Impuesto a las Grandes Transacciones Financieras) del 3%
-              aplica únicamente a pagos de contado en divisas según normativa vigente del SENIAT.
-            </p>
+        {/* Proceso de Financiamiento */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-16"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Proceso Simple en 4 Pasos
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              {
+                numero: '1',
+                titulo: 'Solicita',
+                descripcion: 'Completa el formulario o contacta a un asesor',
+                color: 'bg-bel-green-500'
+              },
+              {
+                numero: '2',
+                titulo: 'Evalúa',
+                descripcion: 'Revisamos tu solicitud y documentos',
+                color: 'bg-blue-500'
+              },
+              {
+                numero: '3',
+                titulo: 'Aprueba',
+                descripcion: 'Recibe respuesta en 48-72 horas',
+                color: 'bg-purple-500'
+              },
+              {
+                numero: '4',
+                titulo: 'Disfruta',
+                descripcion: 'Recibe tu tractor y comienza a trabajar',
+                color: 'bg-orange-500'
+              }
+            ].map((paso, index) => (
+              <div key={index} className="relative">
+                <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+                  <div className={`w-16 h-16 ${paso.color} rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold`}>
+                    {paso.numero}
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-2">{paso.titulo}</h3>
+                  <p className="text-sm text-gray-600">{paso.descripcion}</p>
+                </div>
+                {index < 3 && (
+                  <div className="hidden md:block absolute top-1/2 -right-3 transform -translate-y-1/2 z-10">
+                    <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                      <div className="w-3 h-3 bg-white rounded-full"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </motion.div>
 
@@ -284,21 +345,34 @@ export const Financiamiento = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-12"
+          transition={{ delay: 0.8 }}
+          className="text-center bg-gradient-to-br from-bel-green-500 to-bel-green-600 rounded-2xl p-12 text-white"
         >
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            ¿Tienes dudas sobre el financiamiento?
+          <h3 className="text-3xl font-bold mb-4">
+            ¿Listo para Adquirir tu Tractor?
           </h3>
-          <p className="text-gray-600 mb-6">
-            Contacta a nuestro equipo de asesores para una cotización personalizada
+          <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
+            Nuestros asesores están listos para ayudarte a encontrar el plan perfecto 
+            para tu negocio. Contáctanos ahora y obtén una cotización personalizada.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button as={Link} to="/contacto" size="lg">
+            <Button 
+              as={Link} 
+              to="/contacto" 
+              size="lg"
+              className="bg-white text-bel-green-500 hover:bg-gray-100"
+            >
+              <Phone size={20} />
               Hablar con un Asesor
             </Button>
-            <Button as={Link} to="/catalogo" variant="outline" size="lg">
-              Ver Tractores
+            <Button 
+              as={Link} 
+              to="/catalogo" 
+              variant="outline" 
+              size="lg"
+              className="border-white text-white hover:bg-white/10"
+            >
+              Ver Catálogo de Tractores
             </Button>
           </div>
         </motion.div>
