@@ -416,14 +416,23 @@ export const planesFinanciamiento = [
       const inicial = precioBase * 0.25;
       const montoFinanciado = precioBase * 0.50;
       const valorResidual = precioBase * 0.25;
-      const tasaMensual = 0.12 / 12;
+      const tasaMensual = 0.12 / 12; // 1% mensual
       
+      // Crédito Alemán: Amortización constante, intereses decrecientes
       const amortizacionMensual = montoFinanciado / 36;
+      
+      // Primera cuota (interés sobre monto total)
       const primeraCuota = amortizacionMensual + (montoFinanciado * tasaMensual);
+      
+      // Última cuota (interés solo sobre última amortización)
       const ultimaCuota = amortizacionMensual + (amortizacionMensual * tasaMensual);
+      
+      // Cuota promedio
       const cuotaPromedio = (primeraCuota + ultimaCuota) / 2;
       
-      const totalIntereses = (montoFinanciado * tasaMensual * 37 * 36) / 2;
+      // Total de intereses (suma de serie aritmética decreciente)
+      // Fórmula: Monto × Tasa × (n + 1) / 2
+      const totalIntereses = montoFinanciado * tasaMensual * ((36 + 1) / 2);
       
       return {
         precioBase,
@@ -433,6 +442,7 @@ export const planesFinanciamiento = [
         plazo: 36,
         tasa: 12,
         tasaMensual: tasaMensual * 100,
+        amortizacionMensual,
         primeraCuota,
         ultimaCuota,
         cuotaPromedio,
@@ -442,11 +452,12 @@ export const planesFinanciamiento = [
         totalAPagar: inicial + montoFinanciado + totalIntereses + valorResidual,
         desglose: [
           { concepto: 'Inicial (25%)', monto: inicial },
-          { concepto: 'Primera cuota', monto: primeraCuota, nota: 'Cuota más alta' },
+          { concepto: 'Monto financiado (50%)', monto: montoFinanciado, nota: 'A 36 meses' },
+          { concepto: 'Primera cuota', monto: primeraCuota, nota: 'Mes 1 - Cuota más alta' },
           { concepto: 'Cuota promedio', monto: cuotaPromedio, nota: '36 cuotas decrecientes' },
-          { concepto: 'Última cuota', monto: ultimaCuota, nota: 'Cuota más baja' },
-          { concepto: 'Total intereses', monto: totalIntereses },
-          { concepto: 'Valor residual (25%)', monto: valorResidual, nota: 'Opción de compra final' }
+          { concepto: 'Última cuota', monto: ultimaCuota, nota: 'Mes 36 - Cuota más baja' },
+          { concepto: 'Total intereses (12% anual)', monto: totalIntereses },
+          { concepto: 'Valor residual (25%)', monto: valorResidual, nota: 'Opción de compra al finalizar' }
         ]
       };
     }
