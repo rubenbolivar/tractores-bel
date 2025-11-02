@@ -20,17 +20,24 @@ import { useGeolocation } from '../../hooks/useGeolocation';
 
 export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPlanId = null }) => {
   // Debug
+  console.log('AdvancedCalculator - tractores:', tractores);
+  console.log('AdvancedCalculator - tractores es array?:', Array.isArray(tractores));
   console.log('AdvancedCalculator - planesFinanciamiento:', planesFinanciamiento);
-  console.log('AdvancedCalculator - Es array?:', Array.isArray(planesFinanciamiento));
+  console.log('AdvancedCalculator - planesFinanciamiento es array?:', Array.isArray(planesFinanciamiento));
   
-  const [selectedTractor, setSelectedTractor] = useState(
-    preSelectedTractorId ? tractores.find(t => t.id === preSelectedTractorId) : tractores[0]
-  );
-  const [selectedPlan, setSelectedPlan] = useState(
-    preSelectedPlanId && Array.isArray(planesFinanciamiento)
-      ? planesFinanciamiento.find(p => p.id === preSelectedPlanId)
-      : Array.isArray(planesFinanciamiento) ? planesFinanciamiento[0] : null
-  );
+  const [selectedTractor, setSelectedTractor] = useState(() => {
+    if (!Array.isArray(tractores)) return null;
+    return preSelectedTractorId
+      ? tractores.find(t => t.id === preSelectedTractorId) || tractores[0]
+      : tractores[0];
+  });
+  
+  const [selectedPlan, setSelectedPlan] = useState(() => {
+    if (!Array.isArray(planesFinanciamiento)) return null;
+    return preSelectedPlanId
+      ? planesFinanciamiento.find(p => p.id === preSelectedPlanId) || planesFinanciamiento[0]
+      : planesFinanciamiento[0];
+  });
   const [customInicial, setCustomInicial] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [calculation, setCalculation] = useState(null);
@@ -124,7 +131,7 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
           Selecciona tu Tractor
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {tractores.map((tractor) => (
+          {(Array.isArray(tractores) ? tractores : []).map((tractor) => (
             <button
               key={tractor.id}
               onClick={() => setSelectedTractor(tractor)}
