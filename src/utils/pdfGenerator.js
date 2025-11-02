@@ -107,8 +107,9 @@ export const generateFinancingPDF = (tractor, plan, calculation, asesor) => {
   }
   
   if (calculation.cuotaMensual > 0) {
+    const numCuotas = calculation.cuotas || calculation.numeroCuotas || 12;
     tableData.push([
-      `${calculation.numeroCuotas} Cuotas Mensuales`,
+      `${numCuotas} Cuotas Mensuales`,
       `$${calculation.cuotaMensual.toLocaleString('en-US')} c/u`
     ]);
   }
@@ -238,7 +239,8 @@ export const generateWhatsAppMessage = (tractor, plan, calculation, asesor) => {
   }
   
   if (calculation.cuotaMensual > 0) {
-    message += `• ${calculation.numeroCuotas} Cuotas: $${calculation.cuotaMensual.toLocaleString('en-US')} c/u\n`;
+    const numCuotas = calculation.cuotas || calculation.numeroCuotas || 12;
+    message += `• ${numCuotas} Cuotas: $${calculation.cuotaMensual.toLocaleString('en-US')} c/u\n`;
   }
   
   if (calculation.cuotasEspeciales > 0) {
