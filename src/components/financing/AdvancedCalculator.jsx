@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calculator, 
-  DollarSign, 
-  TrendingUp, 
+import {
+  Calculator,
+  DollarSign,
+  TrendingUp,
   Calendar,
   ChevronDown,
   ChevronUp,
@@ -12,21 +12,28 @@ import {
 } from 'lucide-react';
 import { tractores } from '../../data/tractores';
 import { planesFinanciamiento } from '../../data/planesFinanciamiento';
+import { asesores } from '../../data/asesores';
 import { Button } from '../common/Button';
 import { WhatsAppCTA } from '../contact/WhatsAppCTA';
+import { downloadFinancingPDF, shareViaWhatsApp } from '../../utils/pdfGenerator';
+import { useGeolocation } from '../../hooks/useGeolocation';
 
 export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPlanId = null }) => {
   const [selectedTractor, setSelectedTractor] = useState(
     preSelectedTractorId ? tractores.find(t => t.id === preSelectedTractorId) : tractores[0]
   );
   const [selectedPlan, setSelectedPlan] = useState(
-    preSelectedPlanId 
-      ? planesFinanciamiento.find(p => p.id === preSelectedPlanId) 
+    preSelectedPlanId
+      ? planesFinanciamiento.find(p => p.id === preSelectedPlanId)
       : planesFinanciamiento[0]
   );
   const [customInicial, setCustomInicial] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [calculation, setCalculation] = useState(null);
+  
+  // Obtener asesor regional
+  const { estado } = useGeolocation();
+  const asesor = asesores.find(a => a.estado === estado) || asesores[0];
 
   // Recalcular cuando cambian tractor o plan
   useEffect(() => {
@@ -351,15 +358,29 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
       </div>
 
       {/* Acciones */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Button
+          onClick={() => downloadFinancingPDF(selectedTractor, selectedPlan, calculation, asesor)}
+          variant="outline"
+          className="flex items-center justify-center gap-2"
+        >
+          <Download size={18} />
+          Descargar PDF
+        </Button>
+        
+        <Button
+          onClick={() => shareViaWhatsApp(selectedTractor, selectedPlan, calculation, asesor)}
+          variant="outline"
+          className="flex items-center justify-center gap-2"
+        >
+          <Share2 size={18} />
+          Compartir por WhatsApp
+        </Button>
+        
         <WhatsAppCTA
           message={`Hola, me interesa el ${selectedTractor?.modelo} con el plan ${selectedPlan?.nombre}. ¿Pueden darme más información?`}
-          className="flex-1"
+          className="w-full"
         />
-        <Button variant="outline" className="flex-1">
-          <Share2 size={18} />
-          Compartir Cotización
-        </Button>
       </div>
     </div>
   );
