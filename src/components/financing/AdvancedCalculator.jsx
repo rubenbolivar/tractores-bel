@@ -11,7 +11,7 @@ import {
   Share2
 } from 'lucide-react';
 import { tractores } from '../../data/tractores';
-import { planesFinanciamiento } from '../../data/planesFinanciamiento';
+import { planesFinanciamiento, COSTOS_ADICIONALES } from '../../data/planesFinanciamiento';
 import { asesores } from '../../data/asesores';
 import { Button } from '../common/Button';
 import { WhatsAppCTA } from '../contact/WhatsAppCTA';
@@ -48,18 +48,121 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
     ? { ...asesores[estado], estado, telefono: asesores[estado].whatsapp }
     : { ...asesores['Distrito Capital'], estado: 'Distrito Capital', telefono: asesores['Distrito Capital'].whatsapp };
 
-  // Recalcular cuando cambian tractor o plan
+  // Recalcular cuando cambian tractor, plan o inicial personalizada
   useEffect(() => {
     if (selectedTractor && selectedPlan && selectedPlan.calcular) {
       const precioBase = selectedTractor.precio;
-      const result = selectedPlan.calcular(precioBase);
-      setCalculation(result);
+      
+      // Si hay inicial personalizada y el plan lo soporta, recalcular con nueva inicial
+      if (customInicial && selectedPlan.inicial) {
+        const inicialPersonalizada = customInicial / 100; // Convertir porcentaje a decimal
+        const result = calcularConInicialPersonalizada(precioBase, inicialPersonalizada, selectedPlan);
+        setCalculation(result);
+      } else {
+        const result = selectedPlan.calcular(precioBase);
+        setCalculation(result);
+      }
     }
   }, [selectedTractor, selectedPlan, customInicial]);
 
   const handleInicialChange = (value) => {
     setCustomInicial(value);
-    // Aquí podrías recalcular con inicial personalizada si el plan lo permite
+  };
+  
+  // Función para recalcular con inicial personalizada
+  const calcularConInicialPersonalizada = (precioBase, inicialDecimal, plan) => {
+    const inicial = precioBase * inicialDecimal;
+    const iva = precioBase * COSTOS_ADICIONALES.IVA;
+    const saldoFinanciar = precioBase - inicial;
+    
+    if (plan.id === 'plan-ei-12') {
+      const cuotaRegular = saldoFinanciar / 12;
+      const cuotaEspecial = saldoFinanciar * 0.05;
+      return {
+        precioBase,
+        inicial,
+        iva,
+        saldoFinanciar,
+        cuotas: 12,
+        cuotaMensual: cuotaRegular,
+        cuotasEspeciales: 3,
+        cuotaEspecial,
+        totalAPagar: precioBase + iva,
+        desglose: [
+          { concepto: `Inicial (${(inicialDecimal * 100).toFixed(1)}%)`, monto: inicial },
+          { concepto: 'IVA en Bs (16%)', monto: iva, nota: 'Previo a entrega' },
+          { concepto: '12 Cuotas regulares', monto: cuotaRegular, cantidad: 12 },
+          { concepto: '3 Cuotas especiales', monto: cuotaEspecial, cantidad: 3 }
+        ]
+      };
+    } else if (plan.id === 'plan-ei-30') {
+      const cuotaMensual = saldoFinanciar / 30;
+      return {
+        precioBase,
+        inicial,
+        iva,
+        saldoFinanciar,
+        cuotas: 30,
+        cuotaMensual,
+        totalAPagar: precioBase + iva,
+        desglose: [
+          { concepto: `Inicial (${(inicialDecimal * 100).toFixed(1)}%)`, monto: inicial },
+          { concepto: 'IVA en Bs (16%)', monto: iva, nota: 'Previo a entrega' },
+          { concepto: '30 Cuotas iguales', monto: cuotaMensual, cantidad: 30 }
+        ]
+      };
+    } else if (plan.id === 'llevatelo-fiao') {
+      const pagoInicial = inicial / 6;
+      const cuotaMensual = precioBase * 0.05;
+      return {
+        precioBase,
+        inicial,
+        pagosIniciales: 6,
+        pagoInicial,
+        iva,
+        cuotas: 12,
+        cuotaMensual,
+        totalAPagar: precioBase + iva,
+        desglose: [
+          { concepto: `Afiliación + 5 pagos (${(inicialDecimal * 100).toFixed(1)}%)`, monto: pagoInicial, cantidad: 6 },
+          { concepto: 'IVA en Bs (16%)', monto: iva, nota: 'Antes de entrega' },
+          { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de inicial' },
+          { concepto: '12 Cuotas del 5%', monto: cuotaMensual, cantidad: 12 }
+        ]
+      };
+    } else if (plan.id === 'lease-plus') {
+      const montoFinanciado = precioBase * 0.50;
+      const valorResidual = precioBase * 0.25;
+      const tasaMensual = 0.12 / 12;
+      const amortizacionMensual = montoFinanciado / 36;
+      const primeraCuota = amortizacionMensual + (montoFinanciado * tasaMensual);
+      const ultimaCuota = amortizacionMensual + (amortizacionMensual * tasaMensual);
+      const cuotaPromedio = (primeraCuota + ultimaCuota) / 2;
+      const totalIntereses = (montoFinanciado * tasaMensual * 37 * 36) / 2;
+      
+      return {
+        precioBase,
+        inicial,
+        montoFinanciado,
+        valorResidual,
+        plazo: 36,
+        cuotaPromedio,
+        cuotaMensual: cuotaPromedio,
+        totalIntereses,
+        totalAPagar: inicial + montoFinanciado + totalIntereses + valorResidual,
+        desglose: [
+          { concepto: `Inicial (${(inicialDecimal * 100).toFixed(1)}%)`, monto: inicial },
+          { concepto: 'Primera cuota', monto: primeraCuota, nota: 'Cuota más alta' },
+          { concepto: 'Cuota promedio', monto: cuotaPromedio, nota: '36 cuotas decrecientes' },
+          { concepto: 'Última cuota', monto: ultimaCuota, nota: 'Cuota más baja' },
+          { concepto: 'Total intereses', monto: totalIntereses },
+          { concepto: 'Valor residual (25%)', monto: valorResidual, nota: 'Opción de compra final' }
+        ]
+      };
+    }
+    
+    // Fallback al cálculo original
+    return plan.calcular(precioBase);
   };
 
   const formatCurrency = (value) => {
