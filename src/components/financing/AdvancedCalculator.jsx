@@ -240,16 +240,45 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
             <button
               key={tractor.id}
               onClick={() => setSelectedTractor(tractor)}
-              className={`p-4 rounded-xl border-2 transition-all text-left ${
+              className={`group relative overflow-hidden rounded-xl border-2 transition-all ${
                 selectedTractor?.id === tractor.id
                   ? 'border-bel-green-500 bg-bel-green-50'
-                  : 'border-gray-200 hover:border-bel-green-300'
+                  : 'border-gray-200 hover:border-bel-green-300 hover:shadow-md'
               }`}
             >
-              <div className="font-bold text-gray-900">{tractor.modelo}</div>
-              <div className="text-sm text-gray-600">{tractor.potencia} HP</div>
-              <div className="text-lg font-bold text-bel-green-500 mt-1">
-                {formatCurrency(tractor.precio)}
+              {/* Imagen del tractor */}
+              <div className="relative h-24 overflow-hidden bg-gray-100">
+                <img
+                  src={tractor.imageUrl}
+                  alt={tractor.modelo}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                  loading="lazy"
+                />
+                {tractor.entregaInmediata && (
+                  <div className="absolute top-1 right-1 bg-bel-yellow text-gray-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    Disponible
+                  </div>
+                )}
+                {/* Indicador de selección */}
+                {selectedTractor?.id === tractor.id && (
+                  <div className="absolute top-1 left-1 w-5 h-5 bg-bel-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              
+              {/* Información del tractor */}
+              <div className="p-3 text-left">
+                <div className="font-bold text-gray-900 text-sm">{tractor.modelo}</div>
+                {tractor.subtitulo && (
+                  <div className="text-xs text-gray-500">{tractor.subtitulo}</div>
+                )}
+                <div className="text-xs text-gray-600 mt-1">{tractor.potencia} HP</div>
+                <div className="text-base font-bold text-bel-green-500 mt-1">
+                  {formatCurrency(tractor.precio)}
+                </div>
               </div>
             </button>
           ))}
