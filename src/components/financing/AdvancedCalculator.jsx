@@ -44,7 +44,9 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
   
   // Obtener asesor regional
   const { estado } = useGeolocation();
-  const asesor = asesores.find(a => a.estado === estado) || asesores[0];
+  const asesor = estado && asesores[estado]
+    ? { ...asesores[estado], estado, telefono: asesores[estado].whatsapp }
+    : { ...asesores['Distrito Capital'], estado: 'Distrito Capital', telefono: asesores['Distrito Capital'].whatsapp };
 
   // Recalcular cuando cambian tractor o plan
   useEffect(() => {
