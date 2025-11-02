@@ -360,18 +360,20 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
       {/* Acciones */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Button
-          onClick={() => downloadFinancingPDF(selectedTractor, selectedPlan, calculation, asesor)}
+          onClick={() => calculation && downloadFinancingPDF(selectedTractor, selectedPlan, calculation, asesor)}
           variant="outline"
           className="flex items-center justify-center gap-2"
+          disabled={!calculation}
         >
           <Download size={18} />
           Descargar PDF
         </Button>
         
         <Button
-          onClick={() => shareViaWhatsApp(selectedTractor, selectedPlan, calculation, asesor)}
+          onClick={() => calculation && shareViaWhatsApp(selectedTractor, selectedPlan, calculation, asesor)}
           variant="outline"
           className="flex items-center justify-center gap-2"
+          disabled={!calculation}
         >
           <Share2 size={18} />
           Compartir por WhatsApp
