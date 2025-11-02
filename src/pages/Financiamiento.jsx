@@ -23,9 +23,17 @@ export const Financiamiento = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showCalculator, setShowCalculator] = useState(true);
 
-  // Filtrar planes (excluir el informativo)
-  const planesActivos = planesFinanciamiento.filter(p => p.tipo !== 'informacion');
-  const planCostosAdicionales = planesFinanciamiento.find(p => p.tipo === 'informacion');
+  // Debug: Verificar que planesFinanciamiento es un array
+  console.log('planesFinanciamiento:', planesFinanciamiento);
+  console.log('Es array?:', Array.isArray(planesFinanciamiento));
+  
+  // Filtrar planes (excluir el informativo) - con validación
+  const planesActivos = Array.isArray(planesFinanciamiento)
+    ? planesFinanciamiento.filter(p => p.tipo !== 'informacion')
+    : [];
+  const planCostosAdicionales = Array.isArray(planesFinanciamiento)
+    ? planesFinanciamiento.find(p => p.tipo === 'informacion')
+    : null;
 
   return (
     <div className="pt-24 pb-16 min-h-screen bg-gray-50">

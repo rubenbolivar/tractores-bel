@@ -19,13 +19,17 @@ import { downloadFinancingPDF, shareViaWhatsApp } from '../../utils/pdfGenerator
 import { useGeolocation } from '../../hooks/useGeolocation';
 
 export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPlanId = null }) => {
+  // Debug
+  console.log('AdvancedCalculator - planesFinanciamiento:', planesFinanciamiento);
+  console.log('AdvancedCalculator - Es array?:', Array.isArray(planesFinanciamiento));
+  
   const [selectedTractor, setSelectedTractor] = useState(
     preSelectedTractorId ? tractores.find(t => t.id === preSelectedTractorId) : tractores[0]
   );
   const [selectedPlan, setSelectedPlan] = useState(
-    preSelectedPlanId
+    preSelectedPlanId && Array.isArray(planesFinanciamiento)
       ? planesFinanciamiento.find(p => p.id === preSelectedPlanId)
-      : planesFinanciamiento[0]
+      : Array.isArray(planesFinanciamiento) ? planesFinanciamiento[0] : null
   );
   const [customInicial, setCustomInicial] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -146,7 +150,7 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
           Selecciona tu Plan de Financiamiento
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {planesFinanciamiento.filter(p => p.tipo !== 'informacion').map((plan) => (
+          {(Array.isArray(planesFinanciamiento) ? planesFinanciamiento : []).filter(p => p.tipo !== 'informacion').map((plan) => (
             <button
               key={plan.id}
               onClick={() => setSelectedPlan(plan)}
