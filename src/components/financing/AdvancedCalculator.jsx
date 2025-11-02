@@ -247,11 +247,11 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
               }`}
             >
               {/* Imagen del tractor */}
-              <div className="relative h-24 overflow-hidden bg-gray-100">
+              <div className="relative h-32 overflow-hidden bg-gray-50">
                 <img
                   src={tractor.imageUrl}
                   alt={tractor.modelo}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                  className="w-full h-full object-contain transition-transform group-hover:scale-105"
                   loading="lazy"
                 />
                 {tractor.entregaInmediata && (
