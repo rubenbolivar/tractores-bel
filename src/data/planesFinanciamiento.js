@@ -1,10 +1,10 @@
 // Planes de Financiamiento Tractores BEL
 // Todos los cálculos en USD
+// IMPORTANTE: IVA e IGTF NO están incluidos en los precios de financiamiento
 
 export const COSTOS_ADICIONALES = {
-  IVA: 0.16, // 16%
-  IGTF: 0.03, // 3%
-  PLACA: 440, // USD fijo
+  IVA: 0.16, // 16% - NO incluido en financiamiento
+  IGTF: 0.03, // 3% - NO incluido en financiamiento  
   SEGURO: 'incluido' // 1 año incluido
 };
 
@@ -20,52 +20,6 @@ export const planesFinanciamiento = [
     destacado: true, // Plan destacado/recomendado
     cuotas: 6,
     ventajas: [
-      'Entrega inmediata',
-      'Sin trámites de financiamiento',
-      'Precio preferencial',
-      'Seguro incluido 1 año'
-    ],
-    desventajas: [
-      'Requiere pago total inicial',
-      'Aplica IGTF del 3%',
-      'IVA del 16%'
-    ],
-    requisitos: [
-      'Cédula de identidad o RIF',
-      'Comprobante de domicilio'
-    ],
-    formula: 'P_T = P + IVA(16%) + IGTF(3%) + Placa($440)',
-    calcular: (precioBase) => {
-      const iva = precioBase * COSTOS_ADICIONALES.IVA;
-      const igtf = precioBase * COSTOS_ADICIONALES.IGTF;
-      const placa = COSTOS_ADICIONALES.PLACA;
-      const total = precioBase + iva + igtf + placa;
-      
-      return {
-        precioBase,
-        iva,
-        igtf,
-        placa,
-        total,
-        totalAPagar: total,
-        desglose: [
-          { concepto: 'Precio Base', monto: precioBase },
-          { concepto: 'IVA (16%)', monto: iva },
-          { concepto: 'IGTF (3%)', monto: igtf },
-          { concepto: 'Placa/INTT', monto: placa }
-        ]
-      };
-    }
-  },
-  {
-    id: 'compra-directa',
-    nombre: 'Compra Directa y Promociones',
-    slug: 'compra-directa',
-    descripcion: 'Pago de contado con entrega inmediata',
-    tipo: 'contado',
-    icono: 'DollarSign',
-    color: 'green',
-    ventajas: [
       'Sin intereses',
       'Entrega tras sexto pago',
       'Flexibilidad de pago',
@@ -74,7 +28,8 @@ export const planesFinanciamiento = [
     ],
     desventajas: [
       'Entrega después del último pago',
-      'Requiere compromiso de 6 meses'
+      'Requiere compromiso de 6 meses',
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Cédula de identidad o RIF',
@@ -111,7 +66,45 @@ export const planesFinanciamiento = [
         desglose: [
           { concepto: 'Precio Total Fraccionado', monto: precioFraccionado, nota: 'Precio especial para este plan' },
           { concepto: '5 Cuotas en USD', monto: cuotaMensual, cantidad: 5 },
-          { concepto: '1 Cuota en Bs', monto: cuotaMensual, nota: 'Al tipo de cambio BCV del día' }
+          { concepto: '1 Cuota en Bs', monto: cuotaMensual, nota: 'Al tipo de cambio BCV del día' },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte según normativa' }
+        ]
+      };
+    }
+  },
+  {
+    id: 'compra-directa',
+    nombre: 'Compra Directa y Promociones',
+    slug: 'compra-directa',
+    descripcion: 'Pago de contado con entrega inmediata',
+    tipo: 'contado',
+    icono: 'DollarSign',
+    color: 'green',
+    ventajas: [
+      'Entrega inmediata',
+      'Sin trámites de financiamiento',
+      'Precio preferencial',
+      'Seguro incluido 1 año'
+    ],
+    desventajas: [
+      'Requiere pago total inicial',
+      'IVA e IGTF no incluidos'
+    ],
+    requisitos: [
+      'Cédula de identidad o RIF',
+      'Comprobante de domicilio'
+    ],
+    formula: 'Precio de contado (IVA e IGTF no incluidos)',
+    calcular: (precioBase) => {
+      return {
+        precioBase,
+        total: precioBase,
+        totalAPagar: precioBase,
+        cuotaMensual: precioBase, // Para evitar undefined en display
+        desglose: [
+          { concepto: 'Precio de Contado', monto: precioBase },
+          { concepto: 'IVA (16%)', monto: 0, nota: 'NO incluido - Se paga aparte' },
+          { concepto: 'IGTF (3%)', monto: 0, nota: 'NO incluido - Aplica según forma de pago' }
         ]
       };
     }
@@ -130,24 +123,22 @@ export const planesFinanciamiento = [
     ventajas: [
       'Entrega inmediata',
       'Inicial accesible del 40%',
-      'IVA previo en Bolívares',
-      '15 pagos en total'
+      '15 pagos en total',
+      'Sin intereses'
     ],
     desventajas: [
       'Requiere inicial del 40%',
-      'IVA debe pagarse antes de entrega',
-      'Cuotas especiales adicionales'
+      'Cuotas especiales adicionales',
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Inicial del 40%',
-      'IVA en Bs previo a entrega',
       'Referencias comerciales',
       'Comprobante de ingresos'
     ],
-    formula: 'Inicial 40% + IVA previo + 60% en 12 cuotas + 3 especiales',
+    formula: 'Inicial 40% + 60% en 12 cuotas + 3 especiales',
     calcular: (precioBase) => {
       const inicial = precioBase * 0.40;
-      const iva = precioBase * COSTOS_ADICIONALES.IVA;
       const saldoFinanciar = precioBase * 0.60;
       const cuotaRegular = saldoFinanciar / 12;
       const cuotaEspecial = saldoFinanciar * 0.05;
@@ -155,19 +146,17 @@ export const planesFinanciamiento = [
       return {
         precioBase,
         inicial,
-        iva,
         saldoFinanciar,
         cuotas: 12,
         cuotaMensual: cuotaRegular,
         cuotasEspeciales: 3,
         cuotaEspecial,
-        total: precioBase + iva,
-        totalAPagar: precioBase + iva,
+        totalAPagar: precioBase,
         desglose: [
           { concepto: 'Inicial (40%)', monto: inicial },
-          { concepto: 'IVA en Bs (16%)', monto: iva, nota: 'Previo a entrega' },
           { concepto: '12 Cuotas regulares', monto: cuotaRegular, cantidad: 12 },
-          { concepto: '3 Cuotas especiales', monto: cuotaEspecial, cantidad: 3 }
+          { concepto: '3 Cuotas especiales', monto: cuotaEspecial, cantidad: 3 },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
@@ -186,39 +175,35 @@ export const planesFinanciamiento = [
       'Entrega inmediata',
       'Cuotas más bajas',
       'Plazo extendido de 30 meses',
-      'IVA previo en Bolívares'
+      'Sin intereses'
     ],
     desventajas: [
       'Inicial del 33.33%',
       'Compromiso de 30 meses',
-      'IVA previo requerido'
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Inicial del 33.33%',
-      'IVA en Bs previo',
       'Referencias comerciales sólidas',
       'Historial crediticio'
     ],
-    formula: 'Inicial 33.33% + IVA previo + 66.67% en 30 cuotas iguales',
+    formula: 'Inicial 33.33% + 66.67% en 30 cuotas iguales',
     calcular: (precioBase) => {
       const inicial = precioBase * 0.3333;
-      const iva = precioBase * COSTOS_ADICIONALES.IVA;
       const saldoFinanciar = precioBase * 0.6667;
       const cuotaMensual = saldoFinanciar / 30;
       
       return {
         precioBase,
         inicial,
-        iva,
         saldoFinanciar,
         cuotas: 30,
         cuotaMensual,
-        total: precioBase + iva,
-        totalAPagar: precioBase + iva,
+        totalAPagar: precioBase,
         desglose: [
           { concepto: 'Inicial (33.33%)', monto: inicial },
-          { concepto: 'IVA en Bs (16%)', monto: iva, nota: 'Previo a entrega' },
-          { concepto: '30 Cuotas iguales', monto: cuotaMensual, cantidad: 30 }
+          { concepto: '30 Cuotas iguales', monto: cuotaMensual, cantidad: 30 },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
@@ -241,7 +226,7 @@ export const planesFinanciamiento = [
     desventajas: [
       'Entrega después de 6 meses',
       'Dos fases de pago',
-      'Cuotas especiales en Fase 2'
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Referencias comerciales',
@@ -274,14 +259,14 @@ export const planesFinanciamiento = [
           descripcion: 'Post-entrega'
         },
         cuotaMensual: fase1Cuota,
-        total: precioBase,
         totalAPagar: precioBase,
         plazoTotal: 36,
         desglose: [
           { concepto: 'Fase 1: 6 cuotas (35%)', monto: fase1Cuota, cantidad: 6 },
           { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de Fase 1' },
           { concepto: 'Fase 2: 30 cuotas (65%)', monto: fase2CuotaRegular, cantidad: 30 },
-          { concepto: 'Fase 2: 3 especiales', monto: fase2CuotaEspecial, cantidad: 3 }
+          { concepto: 'Fase 2: 3 especiales', monto: fase2CuotaEspecial, cantidad: 3 },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
@@ -304,7 +289,7 @@ export const planesFinanciamiento = [
     desventajas: [
       'Entrega después de 16 meses',
       'Compromiso de 5.5 años',
-      'Mayor tiempo de espera'
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Referencias comerciales sólidas',
@@ -332,13 +317,13 @@ export const planesFinanciamiento = [
           cuotaMensual: cuotaPostEntrega
         },
         cuotaMensual: cuotaPreEntrega,
-        total: precioBase,
         totalAPagar: precioBase,
         plazoTotal: 66,
         desglose: [
           { concepto: '16 Pagos pre-entrega', monto: cuotaPreEntrega, cantidad: 16 },
           { concepto: 'Entrega del tractor', monto: 0, nota: 'Mes 17' },
-          { concepto: '50 Cuotas post-entrega', monto: cuotaPostEntrega, cantidad: 50 }
+          { concepto: '50 Cuotas post-entrega', monto: cuotaPostEntrega, cantidad: 50 },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
@@ -347,7 +332,7 @@ export const planesFinanciamiento = [
     id: 'llevatelo-fiao',
     nombre: 'Llévatelo FIAO',
     slug: 'llevatelo-fiao',
-    descripcion: 'Inicial 40% en 6 pagos + IVA + 12 cuotas del 5%',
+    descripcion: 'Inicial 40% en 6 pagos + 12 cuotas del 5%',
     tipo: 'financiado',
     icono: 'Handshake',
     color: 'teal',
@@ -361,20 +346,18 @@ export const planesFinanciamiento = [
     ],
     desventajas: [
       'Requiere 40% de inicial',
-      'IVA previo en Bolívares',
-      'Entrega después de 6 pagos'
+      'Entrega después de 6 pagos',
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Afiliación + 5 pagos (40%)',
-      'IVA en Bs antes de entrega',
       'Referencias personales',
       'Comprobante de domicilio'
     ],
-    formula: 'Inicial 40% (6 pagos) + IVA en Bs + 12 cuotas del 5% cada una',
+    formula: 'Inicial 40% (6 pagos) + 12 cuotas del 5% cada una',
     calcular: (precioBase) => {
       const inicial = precioBase * 0.40;
       const pagoInicial = inicial / 6;
-      const iva = precioBase * COSTOS_ADICIONALES.IVA;
       const cuotaMensual = precioBase * 0.05;
       
       return {
@@ -382,16 +365,14 @@ export const planesFinanciamiento = [
         inicial,
         pagosIniciales: 6,
         pagoInicial,
-        iva,
         cuotas: 12,
         cuotaMensual,
-        total: precioBase + iva,
-        totalAPagar: precioBase + iva,
+        totalAPagar: precioBase,
         desglose: [
           { concepto: 'Afiliación + 5 pagos (40%)', monto: pagoInicial, cantidad: 6 },
-          { concepto: 'IVA en Bs (16%)', monto: iva, nota: 'Antes de entrega' },
           { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de inicial' },
-          { concepto: '12 Cuotas del 5%', monto: cuotaMensual, cantidad: 12 }
+          { concepto: '12 Cuotas del 5%', monto: cuotaMensual, cantidad: 12 },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
@@ -419,7 +400,7 @@ export const planesFinanciamiento = [
       'Tasa de interés del 10% anual',
       'Valor residual del 10% al final',
       'Requiere análisis crediticio',
-      'No es dueño hasta pagar valor residual'
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Estados financieros auditados',
@@ -427,15 +408,13 @@ export const planesFinanciamiento = [
       'Análisis crediticio completo',
       'Garantías corporativas'
     ],
-    formula: 'Cuotas fijas a 36 meses (10% anual) + Valor residual 10% (Leasing Tradicional)',
+    formula: 'Cuotas fijas a 36 meses (10% anual) + Valor residual 10%',
     calcular: (precioBase) => {
       const valorResidual = precioBase * 0.10;
-      const montoFinanciar = precioBase - valorResidual; // 90% del precio
-      const tasaMensual = 0.10 / 12; // 0.833% mensual
+      const montoFinanciar = precioBase - valorResidual;
+      const tasaMensual = 0.10 / 12;
       const numeroCuotas = 36;
       
-      // Fórmula de cuota fija (sistema francés)
-      // C = P × [i × (1 + i)^n] / [(1 + i)^n - 1]
       const factorPotencia = Math.pow(1 + tasaMensual, numeroCuotas);
       const cuotaFija = montoFinanciar * (tasaMensual * factorPotencia) / (factorPotencia - 1);
       
@@ -449,7 +428,6 @@ export const planesFinanciamiento = [
         valorResidual,
         plazo: 36,
         tasa: 10,
-        tasaMensual: tasaMensual * 100,
         cuotaFija,
         cuotaMensual: cuotaFija,
         totalPagado,
@@ -457,10 +435,10 @@ export const planesFinanciamiento = [
         totalAPagar: totalPagado + valorResidual,
         desglose: [
           { concepto: 'Monto a financiar (90%)', monto: montoFinanciar, nota: 'Sin inicial' },
-          { concepto: '36 Cuotas fijas', monto: cuotaFija, cantidad: 36, nota: 'Mismo monto cada mes' },
+          { concepto: '36 Cuotas fijas', monto: cuotaFija, cantidad: 36 },
           { concepto: 'Total intereses (10% anual)', monto: totalIntereses },
           { concepto: 'Valor residual (10%)', monto: valorResidual, nota: 'Opción de compra al finalizar' },
-          { concepto: 'Total pagado en cuotas', monto: totalPagado }
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
@@ -487,7 +465,8 @@ export const planesFinanciamiento = [
     desventajas: [
       'Tasa de interés del 12% anual',
       'Valor residual del 25%',
-      'Requiere análisis crediticio'
+      'Requiere análisis crediticio',
+      'IVA e IGTF no incluidos'
     ],
     requisitos: [
       'Inicial del 25%',
@@ -495,27 +474,17 @@ export const planesFinanciamiento = [
       'Referencias bancarias',
       'Análisis crediticio completo'
     ],
-    formula: 'Inicial 25% + Financiado 50% a 36 meses (12% anual) + Valor residual 25% (Crédito Alemán)',
+    formula: 'Inicial 25% + Financiado 50% a 36 meses (12% anual) + Valor residual 25%',
     calcular: (precioBase) => {
       const inicial = precioBase * 0.25;
       const montoFinanciado = precioBase * 0.50;
       const valorResidual = precioBase * 0.25;
-      const tasaMensual = 0.12 / 12; // 1% mensual
+      const tasaMensual = 0.12 / 12;
       
-      // Crédito Alemán: Amortización constante, intereses decrecientes
       const amortizacionMensual = montoFinanciado / 36;
-      
-      // Primera cuota (interés sobre monto total)
       const primeraCuota = amortizacionMensual + (montoFinanciado * tasaMensual);
-      
-      // Última cuota (interés solo sobre última amortización)
       const ultimaCuota = amortizacionMensual + (amortizacionMensual * tasaMensual);
-      
-      // Cuota promedio
       const cuotaPromedio = (primeraCuota + ultimaCuota) / 2;
-      
-      // Total de intereses (suma de serie aritmética decreciente)
-      // Fórmula: Monto × Tasa × (n + 1) / 2
       const totalIntereses = montoFinanciado * tasaMensual * ((36 + 1) / 2);
       
       return {
@@ -525,23 +494,17 @@ export const planesFinanciamiento = [
         valorResidual,
         plazo: 36,
         tasa: 12,
-        tasaMensual: tasaMensual * 100,
-        amortizacionMensual,
-        primeraCuota,
-        ultimaCuota,
         cuotaPromedio,
         cuotaMensual: cuotaPromedio,
         totalIntereses,
-        total: inicial + montoFinanciado + totalIntereses + valorResidual,
         totalAPagar: inicial + montoFinanciado + totalIntereses + valorResidual,
         desglose: [
           { concepto: 'Inicial (25%)', monto: inicial },
           { concepto: 'Monto financiado (50%)', monto: montoFinanciado, nota: 'A 36 meses' },
-          { concepto: 'Primera cuota', monto: primeraCuota, nota: 'Mes 1 - Cuota más alta' },
           { concepto: 'Cuota promedio', monto: cuotaPromedio, nota: '36 cuotas decrecientes' },
-          { concepto: 'Última cuota', monto: ultimaCuota, nota: 'Mes 36 - Cuota más baja' },
           { concepto: 'Total intereses (12% anual)', monto: totalIntereses },
-          { concepto: 'Valor residual (25%)', monto: valorResidual, nota: 'Opción de compra al finalizar' }
+          { concepto: 'Valor residual (25%)', monto: valorResidual, nota: 'Opción de compra al finalizar' },
+          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
         ]
       };
     }
