@@ -73,37 +73,64 @@ export const planesFinanciamiento = [
     }
   },
   {
-    id: 'compra-directa',
-    nombre: 'Compra Directa y Promociones',
-    slug: 'compra-directa',
-    descripcion: 'Pago de contado con entrega inmediata',
+    id: 'entrega-inmediata-contado',
+    nombre: 'Entrega Inmediata - Pago de Contado',
+    slug: 'entrega-inmediata-contado',
+    descripcion: 'Pago único con entrega inmediata',
     tipo: 'contado',
     icono: 'DollarSign',
     color: 'green',
     ventajas: [
       'Entrega inmediata',
       'Sin trámites de financiamiento',
-      'Precio preferencial',
-      'Seguro incluido 1 año'
+      'Precio preferencial de contado',
+      'Seguro incluido 1 año',
+      'Disponible solo en modelos seleccionados'
     ],
     desventajas: [
       'Requiere pago total inicial',
-      'IVA e IGTF no incluidos'
+      'IGTF no incluido',
+      'Solo disponible en 5 modelos'
     ],
     requisitos: [
       'Cédula de identidad o RIF',
-      'Comprobante de domicilio'
+      'Comprobante de domicilio',
+      'Pago en USD o transferencia'
     ],
-    formula: 'Precio de contado (IVA e IGTF no incluidos)',
-    calcular: (precioBase) => {
+    formula: 'Precio de contado (IGTF no incluido)',
+    // Precios de contado solo para modelos con entrega inmediata
+    preciosContado: {
+      'bel60': 31563,
+      'bel90': 49095,
+      'bel110': 55990,
+      'bel150': 98500,
+      'bel220': 136177
+    },
+    calcular: function(precioBase, tractorId) {
+      const precioContado = this.preciosContado?.[tractorId];
+      
+      // Si el modelo no tiene precio de contado, no está disponible
+      if (!precioContado) {
+        return {
+          precioBase,
+          disponible: false,
+          total: 0,
+          totalAPagar: 0,
+          cuotaMensual: 0,
+          desglose: [
+            { concepto: 'No Disponible', monto: 0, nota: 'Este modelo no está disponible en pago de contado' }
+          ]
+        };
+      }
+      
       return {
-        precioBase,
-        total: precioBase,
-        totalAPagar: precioBase,
-        cuotaMensual: precioBase, // Para evitar undefined en display
+        precioBase: precioContado,
+        disponible: true,
+        total: precioContado,
+        totalAPagar: precioContado,
+        cuotaMensual: precioContado,
         desglose: [
-          { concepto: 'Precio de Contado', monto: precioBase },
-          { concepto: 'IVA (16%)', monto: 0, nota: 'NO incluido - Se paga aparte' },
+          { concepto: 'Precio de Contado', monto: precioContado, nota: 'Entrega inmediata' },
           { concepto: 'IGTF (3%)', monto: 0, nota: 'NO incluido - Aplica según forma de pago' }
         ]
       };
