@@ -365,12 +365,15 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
                   {selectedPlan.tipo === 'contado' ? 'Total a Pagar' : 'Cuota Mensual'}
                 </div>
                 <div className="text-3xl md:text-4xl font-bold">
-                  {selectedPlan.tipo === 'contado' 
+                  {selectedPlan.tipo === 'contado'
                     ? formatCurrency(calculation.total)
                     : formatCurrency(calculation.cuotaMensual || calculation.cuotaRegular || calculation.cuotaPromedio)
                   }
                   {selectedPlan.tipo !== 'contado' && <span className="text-lg">/mes</span>}
                 </div>
+                {selectedPlan.tipo === 'contado' && (
+                  <div className="text-xs opacity-75 mt-1">+ IGTF</div>
+                )}
                 {selectedPlan.tipo === 'leasing' && (
                   <div className="text-xs opacity-75 mt-1">Cuota promedio (decreciente)</div>
                 )}
@@ -403,6 +406,7 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
                 <div>
                   <div className="text-sm opacity-90 mb-1">Total a Pagar</div>
                   <div className="text-3xl font-bold">{formatCurrency(calculation.total)}</div>
+                  <div className="text-xs opacity-75 mt-1">+ IGTF</div>
                   {calculation.totalIntereses && (
                     <div className="text-xs opacity-75 mt-1">
                       Incluye {formatCurrency(calculation.totalIntereses)} en intereses
