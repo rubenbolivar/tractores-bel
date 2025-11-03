@@ -42,6 +42,11 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
   const [showDetails, setShowDetails] = useState(false);
   const [calculation, setCalculation] = useState(null);
   
+  // Reset customInicial cuando cambia el plan
+  useEffect(() => {
+    setCustomInicial(null);
+  }, [selectedPlan]);
+  
   // Obtener asesor regional
   const { estado } = useGeolocation();
   const asesor = estado && asesores[estado]
@@ -50,18 +55,23 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
 
   // Recalcular cuando cambian tractor, plan o inicial personalizada
   useEffect(() => {
-    if (selectedTractor && selectedPlan && selectedPlan.calcular) {
-      const precioBase = selectedTractor.precio;
-      
-      // Si hay inicial personalizada y el plan lo soporta, recalcular con nueva inicial
-      if (customInicial && selectedPlan.inicial) {
-        const inicialPersonalizada = customInicial / 100; // Convertir porcentaje a decimal
-        const result = calcularConInicialPersonalizada(precioBase, inicialPersonalizada, selectedPlan);
-        setCalculation(result);
-      } else {
-        const result = selectedPlan.calcular(precioBase);
-        setCalculation(result);
+    try {
+      if (selectedTractor && selectedPlan && selectedPlan.calcular) {
+        const precioBase = selectedTractor.precio;
+        
+        // Si hay inicial personalizada y el plan lo soporta, recalcular con nueva inicial
+        if (customInicial && selectedPlan.inicial) {
+          const inicialPersonalizada = customInicial / 100;
+          const result = calcularConInicialPersonalizada(precioBase, inicialPersonalizada, selectedPlan);
+          setCalculation(result);
+        } else {
+          const result = selectedPlan.calcular(precioBase);
+          setCalculation(result);
+        }
       }
+    } catch (error) {
+      console.error('Error al calcular:', error);
+      setCalculation(null);
     }
   }, [selectedTractor, selectedPlan, customInicial]);
 
@@ -71,9 +81,10 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
   
   // Función para recalcular con inicial personalizada
   const calcularConInicialPersonalizada = (precioBase, inicialDecimal, plan) => {
-    const inicial = precioBase * inicialDecimal;
-    const iva = precioBase * COSTOS_ADICIONALES.IVA;
-    const saldoFinanciar = precioBase - inicial;
+    try {
+      const inicial = precioBase * inicialDecimal;
+      const iva = precioBase * COSTOS_ADICIONALES.IVA;
+      const saldoFinanciar = precioBase - inicial;
     
     if (plan.id === 'plan-ei-12') {
       const cuotaRegular = saldoFinanciar / 12;
@@ -161,8 +172,12 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
       };
     }
     
-    // Fallback al cálculo original
-    return plan.calcular(precioBase);
+      // Fallback al cálculo original
+      return plan.calcular(precioBase);
+    } catch (error) {
+      console.error('Error en cálculo personalizado:', error);
+      return plan.calcular(precioBase);
+    }
   };
 
   const formatCurrency = (value) => {
