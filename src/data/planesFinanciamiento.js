@@ -382,6 +382,75 @@ export const planesFinanciamiento = [
     }
   },
   {
+    id: 'bel-lease',
+    nombre: 'BEL Lease',
+    slug: 'bel-lease',
+    descripcion: 'Leasing tradicional con cuotas fijas',
+    tipo: 'leasing',
+    icono: 'FileCheck',
+    color: 'blue',
+    inicial: 0,
+    valorResidual: 0.10,
+    plazo: 36,
+    tasa: 0.10,
+    ventajas: [
+      'Sin inicial requerida',
+      'Cuotas fijas mensuales',
+      'Opción de compra al final',
+      'Beneficios fiscales',
+      'Mantenimiento incluido'
+    ],
+    desventajas: [
+      'Tasa de interés del 10% anual',
+      'Valor residual del 10% al final',
+      'Requiere análisis crediticio',
+      'No es dueño hasta pagar valor residual'
+    ],
+    requisitos: [
+      'Estados financieros auditados',
+      'Referencias bancarias sólidas',
+      'Análisis crediticio completo',
+      'Garantías corporativas'
+    ],
+    formula: 'Cuotas fijas a 36 meses (10% anual) + Valor residual 10% (Leasing Tradicional)',
+    calcular: (precioBase) => {
+      const valorResidual = precioBase * 0.10;
+      const montoFinanciar = precioBase - valorResidual; // 90% del precio
+      const tasaMensual = 0.10 / 12; // 0.833% mensual
+      const numeroCuotas = 36;
+      
+      // Fórmula de cuota fija (sistema francés)
+      // C = P × [i × (1 + i)^n] / [(1 + i)^n - 1]
+      const factorPotencia = Math.pow(1 + tasaMensual, numeroCuotas);
+      const cuotaFija = montoFinanciar * (tasaMensual * factorPotencia) / (factorPotencia - 1);
+      
+      const totalPagado = cuotaFija * numeroCuotas;
+      const totalIntereses = totalPagado - montoFinanciar;
+      
+      return {
+        precioBase,
+        inicial: 0,
+        montoFinanciar,
+        valorResidual,
+        plazo: 36,
+        tasa: 10,
+        tasaMensual: tasaMensual * 100,
+        cuotaFija,
+        cuotaMensual: cuotaFija,
+        totalPagado,
+        totalIntereses,
+        totalAPagar: totalPagado + valorResidual,
+        desglose: [
+          { concepto: 'Monto a financiar (90%)', monto: montoFinanciar, nota: 'Sin inicial' },
+          { concepto: '36 Cuotas fijas', monto: cuotaFija, cantidad: 36, nota: 'Mismo monto cada mes' },
+          { concepto: 'Total intereses (10% anual)', monto: totalIntereses },
+          { concepto: 'Valor residual (10%)', monto: valorResidual, nota: 'Opción de compra al finalizar' },
+          { concepto: 'Total pagado en cuotas', monto: totalPagado }
+        ]
+      };
+    }
+  },
+  {
     id: 'lease-plus',
     nombre: 'BEL Lease-Plus',
     slug: 'lease-plus',
