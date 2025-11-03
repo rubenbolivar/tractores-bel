@@ -1,17 +1,18 @@
 import { motion } from 'framer-motion';
-import { 
-  DollarSign, 
-  CreditCard, 
-  TrendingUp, 
-  Calendar, 
-  Layers, 
-  Route, 
-  Handshake, 
-  FileText, 
+import {
+  DollarSign,
+  CreditCard,
+  TrendingUp,
+  Calendar,
+  Layers,
+  Route,
+  Handshake,
+  FileText,
   Info,
   Check,
   X,
-  ChevronRight
+  ChevronRight,
+  Star
 } from 'lucide-react';
 import { Button } from '../common/Button';
 
@@ -61,11 +62,21 @@ export const FinancingPlanCard = ({ plan, onSelect, isSelected, showCalculation 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
-      className={`bg-white rounded-2xl shadow-lg p-6 border-2 transition-all cursor-pointer ${
-        isSelected ? 'border-bel-green-500 ring-2 ring-bel-green-200' : `border-gray-200 ${hoverClass}`
+      className={`relative bg-white rounded-2xl shadow-lg p-6 border-2 transition-all cursor-pointer ${
+        plan.destacado ? 'border-bel-yellow ring-4 ring-bel-yellow/20' :
+        isSelected ? 'border-bel-green-500 ring-2 ring-bel-green-200' :
+        `border-gray-200 ${hoverClass}`
       }`}
       onClick={() => onSelect && onSelect(plan)}
     >
+      {/* Badge Destacado */}
+      {plan.destacado && (
+        <div className="absolute -top-3 -right-3 bg-bel-yellow text-gray-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+          <Star size={12} fill="currentColor" />
+          Recomendado
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">

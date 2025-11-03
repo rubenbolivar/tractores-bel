@@ -10,13 +10,15 @@ export const COSTOS_ADICIONALES = {
 
 export const planesFinanciamiento = [
   {
-    id: 'compra-directa',
-    nombre: 'Compra Directa y Promociones',
-    slug: 'compra-directa',
-    descripcion: 'Pago de contado con entrega inmediata',
-    tipo: 'contado',
-    icono: 'DollarSign',
-    color: 'green',
+    id: 'fraccionada-6',
+    nombre: 'Compra Directa Fraccionada',
+    slug: 'fraccionada-6',
+    descripcion: '6 pagos: 5 cuotas en USD + 1 cuota en Bs',
+    tipo: 'fraccionado',
+    icono: 'CreditCard',
+    color: 'blue',
+    destacado: true, // Plan destacado/recomendado
+    cuotas: 6,
     ventajas: [
       'Entrega inmediata',
       'Sin trámites de financiamiento',
@@ -56,14 +58,13 @@ export const planesFinanciamiento = [
     }
   },
   {
-    id: 'fraccionada-6',
-    nombre: 'Compra Directa Fraccionada',
-    slug: 'fraccionada-6',
-    descripcion: '6 pagos: 5 cuotas en USD + 1 cuota en Bs',
-    tipo: 'fraccionado',
-    icono: 'CreditCard',
-    color: 'blue',
-    cuotas: 6,
+    id: 'compra-directa',
+    nombre: 'Compra Directa y Promociones',
+    slug: 'compra-directa',
+    descripcion: 'Pago de contado con entrega inmediata',
+    tipo: 'contado',
+    icono: 'DollarSign',
+    color: 'green',
     ventajas: [
       'Sin intereses',
       'Entrega tras sexto pago',
