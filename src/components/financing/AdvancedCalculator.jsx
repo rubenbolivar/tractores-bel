@@ -58,6 +58,7 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
     try {
       if (selectedTractor && selectedPlan && selectedPlan.calcular) {
         const precioBase = selectedTractor.precio;
+        const tractorId = selectedTractor.id;
         
         // Si hay inicial personalizada y el plan lo soporta, recalcular con nueva inicial
         if (customInicial && selectedPlan.inicial) {
@@ -65,7 +66,8 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
           const result = calcularConInicialPersonalizada(precioBase, inicialPersonalizada, selectedPlan);
           setCalculation(result);
         } else {
-          const result = selectedPlan.calcular(precioBase);
+          // Pasar tractorId para planes que usan precios especiales (como fraccionada-6)
+          const result = selectedPlan.calcular(precioBase, tractorId);
           setCalculation(result);
         }
       }

@@ -68,7 +68,8 @@ export const planesFinanciamiento = [
       'Sin intereses',
       'Entrega tras sexto pago',
       'Flexibilidad de pago',
-      'Última cuota en Bolívares'
+      'Última cuota en Bolívares',
+      'Precio especial fraccionado'
     ],
     desventajas: [
       'Entrega después del último pago',
@@ -79,24 +80,37 @@ export const planesFinanciamiento = [
       'Referencias bancarias',
       'Comprobante de domicilio'
     ],
-    formula: '6 cuotas iguales sin interés',
-    calcular: (precioBase) => {
-      const cuotaMensual = precioBase / 6;
-      const cuotasUSD = cuotaMensual * 5;
-      const cuotaBs = cuotaMensual;
+    formula: '6 cuotas iguales sin interés - Precio especial por modelo',
+    // Precios especiales por modelo para plan fraccionado
+    preciosEspeciales: {
+      'bel50': 14970,
+      'bel60': 21840,
+      'bel75': 23902,
+      'bel90': 33162,
+      'bel105': 36490,
+      'bel110': 43080,
+      'bel140': 49990,
+      'bel150': 71184,
+      'bel220': 92226
+    },
+    calcular: function(precioBase, tractorId) {
+      // Usar precio especial si está disponible, sino usar precio base
+      const precioFraccionado = this.preciosEspeciales?.[tractorId] || precioBase;
+      const cuotaMensual = precioFraccionado / 6;
       
       return {
-        precioBase,
+        precioBase: precioFraccionado,
         cuotas: 6,
         cuotaMensual,
         cuotasUSD: 5,
         cuotaBs: 1,
-        total: precioBase,
-        totalAPagar: precioBase,
+        total: precioFraccionado,
+        totalAPagar: precioFraccionado,
         interes: 0,
         desglose: [
+          { concepto: 'Precio Total Fraccionado', monto: precioFraccionado, nota: 'Precio especial para este plan' },
           { concepto: '5 Cuotas en USD', monto: cuotaMensual, cantidad: 5 },
-          { concepto: '1 Cuota en Bs', monto: cuotaBs, nota: 'Al tipo de cambio del día' }
+          { concepto: '1 Cuota en Bs', monto: cuotaMensual, nota: 'Al tipo de cambio BCV del día' }
         ]
       };
     }
