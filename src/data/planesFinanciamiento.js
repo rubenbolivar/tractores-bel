@@ -296,21 +296,23 @@ export const planesFinanciamiento = [
     id: 'credibel-35x35',
     nombre: 'Credi-BEL 35x35',
     slug: 'credibel-35x35',
-    descripcion: 'Fase 1: 35% en 6 cuotas | Fase 2: 65% en 30 cuotas',
+    descripcion: 'Inicial 40% en 6 partes + 29 cuotas iguales',
     tipo: 'financiado',
     icono: 'Layers',
     color: 'green',
     fases: 2,
+    inicial: 0.40,
+    cuotas: 29,
     ventajas: [
-      'Sin inicial, comienza con cuotas',
-      'Entrega después de Fase 1',
-      'Cuotas accesibles en Fase 1',
-      'Plazo total de 36 meses'
+      'Inicial fraccionada en 6 pagos',
+      'Entrega después de inicial',
+      'Cuotas accesibles',
+      'Plazo total de 35 meses'
     ],
     desventajas: [
-      'Entrega después de 6 meses',
-      'Dos fases de pago',
-      'IVA e IGTF no incluidos'
+      'Requiere 40% de inicial',
+      'Entrega después de 6 pagos',
+      'IGTF no incluido'
     ],
     requisitos: [
       'Referencias comerciales',
@@ -318,39 +320,56 @@ export const planesFinanciamiento = [
       'Aval o garantía',
       'Historial crediticio'
     ],
-    formula: 'Fase 1: 35% en 6 cuotas (pre-entrega) | Fase 2: 65% en 30 cuotas + 3 especiales (post-entrega)',
-    calcular: (precioBase) => {
-      const fase1Monto = precioBase * 0.35;
-      const fase1Cuota = fase1Monto / 6;
-      const fase2Monto = precioBase * 0.65;
-      const fase2CuotaRegular = fase2Monto / 30;
-      const fase2CuotaEspecial = fase2Monto * 0.05;
+    formula: 'Inicial 40% en 6 partes + 29 cuotas iguales',
+    // Datos específicos por modelo
+    datosModelo: {
+      'bel50': { precioFinal: 25961.44, inicial: 10384.57, pagoInicial: 1730.76, cuotaMensual: 537.13 },
+      'bel60': { precioFinal: 37875.60, inicial: 15150.24, pagoInicial: 2525.04, cuotaMensual: 783.63 },
+      'bel75': { precioFinal: 41451.58, inicial: 16580.63, pagoInicial: 2763.44, cuotaMensual: 857.62 },
+      'bel90': { precioFinal: 57510.56, inicial: 23004.22, pagoInicial: 3834.04, cuotaMensual: 1189.87 },
+      'bel105': { precioFinal: 63282.08, inicial: 25312.83, pagoInicial: 4218.81, cuotaMensual: 1309.28 },
+      'bel110': { precioFinal: 74710.66, inicial: 29884.27, pagoInicial: 4980.71, cuotaMensual: 1545.74 },
+      'bel140': { precioFinal: 86694.19, inicial: 34677.68, pagoInicial: 5779.61, cuotaMensual: 1793.67 },
+      'bel150': { precioFinal: 123449.48, inicial: 49379.79, pagoInicial: 8229.97, cuotaMensual: 2554.13 },
+      'bel220': { precioFinal: 159941.17, inicial: 63976.47, pagoInicial: 10662.74, cuotaMensual: 3309.13 }
+    },
+    calcular: function(precioBase, tractorId) {
+      const datos = this.datosModelo?.[tractorId];
+      
+      if (!datos) {
+        // Fallback
+        const inicial = precioBase * 0.40;
+        const pagoInicial = inicial / 6;
+        const saldoFinanciar = precioBase - inicial;
+        const cuotaMensual = saldoFinanciar / 29;
+        
+        return {
+          precioBase,
+          inicial,
+          pagoInicial,
+          cuotas: 29,
+          cuotaMensual,
+          totalAPagar: precioBase,
+          desglose: [
+            { concepto: 'Inicial en 6 pagos (40%)', monto: pagoInicial, cantidad: 6 },
+            { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de inicial' },
+            { concepto: '29 Cuotas iguales', monto: cuotaMensual, cantidad: 29 }
+          ]
+        };
+      }
       
       return {
-        precioBase,
-        fase1: {
-          monto: fase1Monto,
-          cuotas: 6,
-          cuotaMensual: fase1Cuota,
-          descripcion: 'Pre-entrega'
-        },
-        fase2: {
-          monto: fase2Monto,
-          cuotas: 30,
-          cuotaRegular: fase2CuotaRegular,
-          cuotasEspeciales: 3,
-          cuotaEspecial: fase2CuotaEspecial,
-          descripcion: 'Post-entrega'
-        },
-        cuotaMensual: fase1Cuota,
-        totalAPagar: precioBase,
-        plazoTotal: 36,
+        precioBase: datos.precioFinal,
+        inicial: datos.inicial,
+        pagoInicial: datos.pagoInicial,
+        cuotas: 29,
+        cuotaMensual: datos.cuotaMensual,
+        totalAPagar: datos.precioFinal,
+        plazoTotal: 35,
         desglose: [
-          { concepto: 'Fase 1: 6 cuotas (35%)', monto: fase1Cuota, cantidad: 6 },
-          { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de Fase 1' },
-          { concepto: 'Fase 2: 30 cuotas (65%)', monto: fase2CuotaRegular, cantidad: 30 },
-          { concepto: 'Fase 2: 3 especiales', monto: fase2CuotaEspecial, cantidad: 3 },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
+          { concepto: 'Inicial en 6 pagos (40%)', monto: datos.pagoInicial, cantidad: 6, nota: 'Pre-entrega' },
+          { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de pagar inicial' },
+          { concepto: '29 Cuotas iguales', monto: datos.cuotaMensual, cantidad: 29, nota: 'Post-entrega' }
         ]
       };
     }
