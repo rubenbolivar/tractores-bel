@@ -384,9 +384,6 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
                 <div>
                   <div className="text-sm opacity-90 mb-1">Inicial</div>
                   <div className="text-3xl font-bold">{formatCurrency(calculation.inicial)}</div>
-                  <div className="text-xs opacity-75 mt-1">
-                    {((calculation.inicial / selectedTractor.precio) * 100).toFixed(0)}% del precio
-                  </div>
                 </div>
               )}
 
