@@ -511,67 +511,80 @@ export const planesFinanciamiento = [
     }
   },
   {
-    id: 'bel-lease',
-    nombre: 'BEL Lease',
-    slug: 'bel-lease',
-    descripcion: 'Leasing tradicional con cuotas fijas',
-    tipo: 'leasing',
-    icono: 'FileCheck',
+    id: 'en-la-romana',
+    nombre: 'En La Romana',
+    slug: 'en-la-romana',
+    descripcion: 'Inicial 35% + 4 cuotas semestrales',
+    tipo: 'financiado',
+    icono: 'Calendar',
     color: 'blue',
-    inicial: 0,
-    valorResidual: 0.10,
-    plazo: 36,
-    tasa: 0.10,
+    inicial: 0.35,
+    cuotas: 4,
+    cuotasSemestrales: true,
     ventajas: [
-      'Sin inicial requerida',
-      'Cuotas fijas mensuales',
-      'Opción de compra al final',
-      'Beneficios fiscales',
-      'Mantenimiento incluido'
+      'Solo 4 pagos semestrales',
+      'Inicial accesible del 35%',
+      'Plazo de 2 años',
+      'Cuotas cada 6 meses'
     ],
     desventajas: [
-      'Tasa de interés del 10% anual',
-      'Valor residual del 10% al final',
-      'Requiere análisis crediticio',
-      'IVA e IGTF no incluidos'
+      'Requiere 35% de inicial',
+      'Cuotas semestrales grandes',
+      'IGTF no incluido'
     ],
     requisitos: [
-      'Estados financieros auditados',
-      'Referencias bancarias sólidas',
-      'Análisis crediticio completo',
-      'Garantías corporativas'
+      'Inicial del 35%',
+      'Referencias comerciales',
+      'Comprobante de ingresos',
+      'Capacidad de pago semestral'
     ],
-    formula: 'Cuotas fijas a 36 meses (10% anual) + Valor residual 10%',
-    calcular: (precioBase) => {
-      const valorResidual = precioBase * 0.10;
-      const montoFinanciar = precioBase - valorResidual;
-      const tasaMensual = 0.10 / 12;
-      const numeroCuotas = 36;
+    formula: 'Inicial 35% + 4 cuotas semestrales (cada 6 meses)',
+    // Datos específicos por modelo
+    datosModelo: {
+      'bel50': { precioFinal: 32451.79, inicial: 11358.13, cuotaSemestral: 5273.42 },
+      'bel60': { precioFinal: 47344.50, inicial: 16570.58, cuotaSemestral: 7693.48 },
+      'bel75': { precioFinal: 51814.48, inicial: 18135.07, cuotaSemestral: 8419.85 },
+      'bel90': { precioFinal: 71888.20, inicial: 25160.87, cuotaSemestral: 11681.83 },
+      'bel105': { precioFinal: 79102.60, inicial: 27685.91, cuotaSemestral: 12854.17 },
+      'bel110': { precioFinal: 93388.33, inicial: 32685.91, cuotaSemestral: 15175.60 },
+      'bel140': { precioFinal: 108367.75, inicial: 37928.71, cuotaSemestral: 17609.76 },
+      'bel150': { precioFinal: 154311.85, inicial: 54009.15, cuotaSemestral: 25075.68 },
+      'bel220': { precioFinal: 199926.46, inicial: 69974.26, cuotaSemestral: 32488.05 }
+    },
+    calcular: function(precioBase, tractorId) {
+      const datos = this.datosModelo?.[tractorId];
       
-      const factorPotencia = Math.pow(1 + tasaMensual, numeroCuotas);
-      const cuotaFija = montoFinanciar * (tasaMensual * factorPotencia) / (factorPotencia - 1);
-      
-      const totalPagado = cuotaFija * numeroCuotas;
-      const totalIntereses = totalPagado - montoFinanciar;
+      if (!datos) {
+        // Fallback
+        const inicial = precioBase * 0.35;
+        const saldoFinanciar = precioBase - inicial;
+        const cuotaSemestral = saldoFinanciar / 4;
+        
+        return {
+          precioBase,
+          inicial,
+          cuotas: 4,
+          cuotaMensual: cuotaSemestral,
+          cuotaSemestral,
+          totalAPagar: precioBase,
+          desglose: [
+            { concepto: 'Inicial (35%)', monto: inicial },
+            { concepto: '4 Cuotas semestrales', monto: cuotaSemestral, cantidad: 4, nota: 'Cada 6 meses' }
+          ]
+        };
+      }
       
       return {
-        precioBase,
-        inicial: 0,
-        montoFinanciar,
-        valorResidual,
-        plazo: 36,
-        tasa: 10,
-        cuotaFija,
-        cuotaMensual: cuotaFija,
-        totalPagado,
-        totalIntereses,
-        totalAPagar: totalPagado + valorResidual,
+        precioBase: datos.precioFinal,
+        inicial: datos.inicial,
+        cuotas: 4,
+        cuotaMensual: datos.cuotaSemestral,
+        cuotaSemestral: datos.cuotaSemestral,
+        totalAPagar: datos.precioFinal,
+        plazoTotal: 24,
         desglose: [
-          { concepto: 'Monto a financiar (90%)', monto: montoFinanciar, nota: 'Sin inicial' },
-          { concepto: '36 Cuotas fijas', monto: cuotaFija, cantidad: 36 },
-          { concepto: 'Total intereses (10% anual)', monto: totalIntereses },
-          { concepto: 'Valor residual (10%)', monto: valorResidual, nota: 'Opción de compra al finalizar' },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
+          { concepto: 'Inicial (35%)', monto: datos.inicial },
+          { concepto: '4 Cuotas semestrales', monto: datos.cuotaSemestral, cantidad: 4, nota: 'Cada 6 meses (meses 6, 12, 18, 24)' }
         ]
       };
     }
