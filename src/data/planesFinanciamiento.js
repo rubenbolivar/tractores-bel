@@ -237,30 +237,57 @@ export const planesFinanciamiento = [
     desventajas: [
       'Inicial del 33.33%',
       'Compromiso de 30 meses',
-      'IVA e IGTF no incluidos'
+      'IGTF no incluido'
     ],
     requisitos: [
       'Inicial del 33.33%',
       'Referencias comerciales sólidas',
       'Historial crediticio'
     ],
-    formula: 'Inicial 33.33% + 66.67% en 30 cuotas iguales',
-    calcular: (precioBase) => {
-      const inicial = precioBase * 0.3333;
-      const saldoFinanciar = precioBase * 0.6667;
-      const cuotaMensual = saldoFinanciar / 30;
+    formula: 'Inicial 33.33% + 30 cuotas iguales',
+    // Datos específicos por modelo
+    datosModelo: {
+      'bel50': { precioFinal: 34615.25, inicial: 11538.42, cuotaMensual: 769.23 },
+      'bel60': { precioFinal: 50500.80, inicial: 16833.60, cuotaMensual: 1122.24 },
+      'bel75': { precioFinal: 55268.78, inicial: 18422.93, cuotaMensual: 1228.20 },
+      'bel90': { precioFinal: 76680.75, inicial: 25560.25, cuotaMensual: 1704.02 },
+      'bel105': { precioFinal: 84376.11, inicial: 28125.37, cuotaMensual: 1875.02 },
+      'bel110': { precioFinal: 99614.22, inicial: 33204.74, cuotaMensual: 2213.65 },
+      'bel140': { precioFinal: 115592.26, inicial: 38530.75, cuotaMensual: 2568.72 },
+      'bel150': { precioFinal: 164599.31, inicial: 54866.44, cuotaMensual: 3657.76 },
+      'bel220': { precioFinal: 213254.89, inicial: 71084.96, cuotaMensual: 4738.99 }
+    },
+    calcular: function(precioBase, tractorId) {
+      const datos = this.datosModelo?.[tractorId];
+      
+      if (!datos) {
+        // Fallback si no hay datos específicos
+        const inicial = precioBase * 0.3333;
+        const saldoFinanciar = precioBase * 0.6667;
+        const cuotaMensual = saldoFinanciar / 30;
+        
+        return {
+          precioBase,
+          inicial,
+          cuotas: 30,
+          cuotaMensual,
+          totalAPagar: precioBase,
+          desglose: [
+            { concepto: 'Inicial (33.33%)', monto: inicial },
+            { concepto: '30 Cuotas iguales', monto: cuotaMensual, cantidad: 30 }
+          ]
+        };
+      }
       
       return {
-        precioBase,
-        inicial,
-        saldoFinanciar,
+        precioBase: datos.precioFinal,
+        inicial: datos.inicial,
         cuotas: 30,
-        cuotaMensual,
-        totalAPagar: precioBase,
+        cuotaMensual: datos.cuotaMensual,
+        totalAPagar: datos.precioFinal,
         desglose: [
-          { concepto: 'Inicial (33.33%)', monto: inicial },
-          { concepto: '30 Cuotas iguales', monto: cuotaMensual, cantidad: 30 },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
+          { concepto: 'Inicial (33.33%)', monto: datos.inicial },
+          { concepto: '30 Cuotas iguales', monto: datos.cuotaMensual, cantidad: 30 }
         ]
       };
     }
