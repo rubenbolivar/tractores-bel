@@ -209,23 +209,23 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
           concepto: 'Inicial'
         });
       }
+      
+      // Para Plan EI-12: cuotas especiales en meses 3, 6 y 9
+      const mesesEspeciales = selectedPlan.id === 'plan-ei-12' ? [3, 6, 9] : [];
+      
       for (let i = 1; i <= calculation.cuotas; i++) {
+        const cuotaRegular = calculation.cuotaMensual || calculation.cuotaRegular;
+        const esEspecial = mesesEspeciales.includes(i);
+        const montoTotal = esEspecial
+          ? cuotaRegular + (calculation.cuotaEspecial || 0)
+          : cuotaRegular;
+        
         schedule.push({
           numero: i,
-          monto: calculation.cuotaMensual || calculation.cuotaRegular,
+          monto: montoTotal,
           tipo: 'USD',
-          concepto: `Cuota ${i}`
+          concepto: esEspecial ? `Cuota ${i} + Especial` : `Cuota ${i}`
         });
-      }
-      if (calculation.cuotasEspeciales) {
-        for (let i = 1; i <= calculation.cuotasEspeciales; i++) {
-          schedule.push({
-            numero: calculation.cuotas + i,
-            monto: calculation.cuotaEspecial,
-            tipo: 'USD',
-            concepto: `Cuota Especial ${i}`
-          });
-        }
       }
     }
     
