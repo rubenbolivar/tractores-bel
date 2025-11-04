@@ -192,18 +192,36 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
     const schedule = [];
     
     if (selectedPlan.tipo === 'fraccionado' && calculation.cuotas) {
-      // Plan Fraccionado: 5 cuotas en USD + 1 en Bs
+      // Plan Fraccionado: todas las cuotas en USD
       for (let i = 1; i <= calculation.cuotas; i++) {
         schedule.push({
           numero: i,
           monto: calculation.cuotaMensual,
-          tipo: 'USD', // Todas en USD ahora
-          concepto: i === calculation.cuotas ? `Cuota ${i} (en Bs al BCV)` : `Cuota ${i}`
+          tipo: 'USD',
+          concepto: `Cuota ${i}`
         });
       }
     } else if (selectedPlan.tipo === 'financiado' && calculation.cuotas) {
-      // Para Llévatelo FIAO: mostrar pagos de inicial primero
-      if (selectedPlan.id === 'llevatelo-fiao' && calculation.pagoInicial) {
+      // Para Credi-BEL 35x35: mostrar pagos de inicial primero
+      if (selectedPlan.id === 'credibel-35x35' && calculation.pagoInicial) {
+        for (let i = 1; i <= 6; i++) {
+          schedule.push({
+            numero: i,
+            monto: calculation.pagoInicial,
+            tipo: 'USD',
+            concepto: `Pago Inicial ${i}/6`
+          });
+        }
+        // Luego las 29 cuotas regulares
+        for (let i = 1; i <= 29; i++) {
+          schedule.push({
+            numero: 6 + i,
+            monto: calculation.cuotaMensual,
+            tipo: 'USD',
+            concepto: `Cuota ${i}/29`
+          });
+        }
+      } else if (selectedPlan.id === 'llevatelo-fiao' && calculation.pagoInicial) {
         for (let i = 1; i <= 6; i++) {
           schedule.push({
             numero: i,
