@@ -375,63 +375,6 @@ export const planesFinanciamiento = [
     }
   },
   {
-    id: 'ruta-66',
-    nombre: 'BEL Ruta 66',
-    slug: 'ruta-66',
-    descripcion: '16 pagos pre-entrega + 50 cuotas post-entrega',
-    tipo: 'financiado',
-    icono: 'Route',
-    color: 'orange',
-    plazoTotal: 66,
-    ventajas: [
-      'Plazo más largo: 66 meses',
-      'Cuotas muy accesibles',
-      'Ideal para flujo de caja limitado',
-      'Sin inicial'
-    ],
-    desventajas: [
-      'Entrega después de 16 meses',
-      'Compromiso de 5.5 años',
-      'IVA e IGTF no incluidos'
-    ],
-    requisitos: [
-      'Referencias comerciales sólidas',
-      'Historial crediticio comprobado',
-      'Aval o garantía',
-      'Comprobante de ingresos estables'
-    ],
-    formula: '16 pagos pre-entrega + 50 cuotas post-entrega = 66 meses',
-    calcular: (precioBase) => {
-      const montoPreEntrega = precioBase * 0.30;
-      const cuotaPreEntrega = montoPreEntrega / 16;
-      const montoPostEntrega = precioBase * 0.70;
-      const cuotaPostEntrega = montoPostEntrega / 50;
-      
-      return {
-        precioBase,
-        preEntrega: {
-          cuotas: 16,
-          monto: montoPreEntrega,
-          cuotaMensual: cuotaPreEntrega
-        },
-        postEntrega: {
-          cuotas: 50,
-          monto: montoPostEntrega,
-          cuotaMensual: cuotaPostEntrega
-        },
-        cuotaMensual: cuotaPreEntrega,
-        totalAPagar: precioBase,
-        plazoTotal: 66,
-        desglose: [
-          { concepto: '16 Pagos pre-entrega', monto: cuotaPreEntrega, cantidad: 16 },
-          { concepto: 'Entrega del tractor', monto: 0, nota: 'Mes 17' },
-          { concepto: '50 Cuotas post-entrega', monto: cuotaPostEntrega, cantidad: 50 },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
-        ]
-      };
-    }
-  },
-  {
     id: 'llevatelo-fiao',
     nombre: 'Llévatelo FIAO',
     slug: 'llevatelo-fiao',
@@ -589,72 +532,6 @@ export const planesFinanciamiento = [
       };
     }
   },
-  {
-    id: 'lease-plus',
-    nombre: 'BEL Lease-Plus',
-    slug: 'lease-plus',
-    descripcion: 'Leasing con opción de compra - Cuotas decrecientes',
-    tipo: 'leasing',
-    icono: 'FileText',
-    color: 'violet',
-    inicial: 0.25,
-    financiado: 0.50,
-    valorResidual: 0.25,
-    plazo: 36,
-    tasa: 0.12,
-    ventajas: [
-      'Inicial solo del 25%',
-      'Cuotas decrecientes',
-      'Opción de compra al final',
-      'Beneficios fiscales'
-    ],
-    desventajas: [
-      'Tasa de interés del 12% anual',
-      'Valor residual del 25%',
-      'Requiere análisis crediticio',
-      'IVA e IGTF no incluidos'
-    ],
-    requisitos: [
-      'Inicial del 25%',
-      'Estados financieros',
-      'Referencias bancarias',
-      'Análisis crediticio completo'
-    ],
-    formula: 'Inicial 25% + Financiado 50% a 36 meses (12% anual) + Valor residual 25%',
-    calcular: (precioBase) => {
-      const inicial = precioBase * 0.25;
-      const montoFinanciado = precioBase * 0.50;
-      const valorResidual = precioBase * 0.25;
-      const tasaMensual = 0.12 / 12;
-      
-      const amortizacionMensual = montoFinanciado / 36;
-      const primeraCuota = amortizacionMensual + (montoFinanciado * tasaMensual);
-      const ultimaCuota = amortizacionMensual + (amortizacionMensual * tasaMensual);
-      const cuotaPromedio = (primeraCuota + ultimaCuota) / 2;
-      const totalIntereses = montoFinanciado * tasaMensual * ((36 + 1) / 2);
-      
-      return {
-        precioBase,
-        inicial,
-        montoFinanciado,
-        valorResidual,
-        plazo: 36,
-        tasa: 12,
-        cuotaPromedio,
-        cuotaMensual: cuotaPromedio,
-        totalIntereses,
-        totalAPagar: inicial + montoFinanciado + totalIntereses + valorResidual,
-        desglose: [
-          { concepto: 'Inicial (25%)', monto: inicial },
-          { concepto: 'Monto financiado (50%)', monto: montoFinanciado, nota: 'A 36 meses' },
-          { concepto: 'Cuota promedio', monto: cuotaPromedio, nota: '36 cuotas decrecientes' },
-          { concepto: 'Total intereses (12% anual)', monto: totalIntereses },
-          { concepto: 'Valor residual (25%)', monto: valorResidual, nota: 'Opción de compra al finalizar' },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
-        ]
-      };
-    }
-  }
 ];
 
 // Función helper para obtener un plan por slug

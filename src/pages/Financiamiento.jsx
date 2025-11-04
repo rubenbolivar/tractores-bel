@@ -48,7 +48,7 @@ export const Financiamiento = () => {
             Planes de Financiamiento
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Facilitamos la compra de tu tractor con 9 planes flexibles diseñados para cada necesidad. 
+            Facilitamos la compra de tu tractor con 7 planes flexibles diseñados para cada necesidad.
             Desde pagos de contado hasta financiamientos a largo plazo.
           </p>
         </motion.div>
@@ -86,7 +86,7 @@ export const Financiamiento = () => {
           className="mb-16"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Nuestros 9 Planes de Financiamiento
+            Nuestros 7 Planes de Financiamiento
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@ export const Financiamiento = () => {
               </div>
               <h3 className="font-bold text-gray-900 mb-2">Planes Flexibles</h3>
               <p className="text-sm text-gray-600">
-                9 opciones diferentes para adaptarse a tu flujo de caja
+                7 opciones diferentes para adaptarse a tu flujo de caja
               </p>
             </div>
 
