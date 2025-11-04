@@ -67,7 +67,7 @@ export const planesFinanciamiento = [
           { concepto: 'Precio Total Fraccionado', monto: precioFraccionado, nota: 'Precio especial para este plan' },
           { concepto: '5 Cuotas en USD', monto: cuotaMensual, cantidad: 5 },
           { concepto: '1 Cuota en Bs', monto: cuotaMensual, nota: 'Al tipo de cambio BCV del día' },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte según normativa' }
+          { concepto: 'IGTF', monto: 0, nota: 'NO incluido - Se paga aparte según normativa' }
         ]
       };
     }
