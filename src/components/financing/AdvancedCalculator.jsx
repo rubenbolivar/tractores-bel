@@ -192,40 +192,63 @@ export const AdvancedCalculator = ({ preSelectedTractorId = null, preSelectedPla
     const schedule = [];
     
     if (selectedPlan.tipo === 'fraccionado' && calculation.cuotas) {
+      // Plan Fraccionado: 5 cuotas en USD + 1 en Bs
       for (let i = 1; i <= calculation.cuotas; i++) {
         schedule.push({
           numero: i,
           monto: calculation.cuotaMensual,
-          tipo: i === calculation.cuotas ? 'Bs' : 'USD',
-          concepto: `Cuota ${i}`
+          tipo: 'USD', // Todas en USD ahora
+          concepto: i === calculation.cuotas ? `Cuota ${i} (en Bs al BCV)` : `Cuota ${i}`
         });
       }
     } else if (selectedPlan.tipo === 'financiado' && calculation.cuotas) {
-      if (calculation.inicial) {
-        schedule.push({
-          numero: 0,
-          monto: calculation.inicial,
-          tipo: 'USD',
-          concepto: 'Inicial'
-        });
-      }
-      
-      // Para Plan EI-12: cuotas especiales en meses 3, 6 y 9
-      const mesesEspeciales = selectedPlan.id === 'plan-ei-12' ? [3, 6, 9] : [];
-      
-      for (let i = 1; i <= calculation.cuotas; i++) {
-        const cuotaRegular = calculation.cuotaMensual || calculation.cuotaRegular;
-        const esEspecial = mesesEspeciales.includes(i);
-        const montoTotal = esEspecial
-          ? cuotaRegular + (calculation.cuotaEspecial || 0)
-          : cuotaRegular;
+      // Para Llévatelo FIAO: mostrar pagos de inicial primero
+      if (selectedPlan.id === 'llevatelo-fiao' && calculation.pagoInicial) {
+        for (let i = 1; i <= 6; i++) {
+          schedule.push({
+            numero: i,
+            monto: calculation.pagoInicial,
+            tipo: 'USD',
+            concepto: `Pago Inicial ${i}/6`
+          });
+        }
+        // Luego las 12 cuotas regulares
+        for (let i = 1; i <= 12; i++) {
+          schedule.push({
+            numero: 6 + i,
+            monto: calculation.cuotaMensual,
+            tipo: 'USD',
+            concepto: `Cuota ${i}/12`
+          });
+        }
+      } else {
+        // Otros planes financiados
+        if (calculation.inicial) {
+          schedule.push({
+            numero: 0,
+            monto: calculation.inicial,
+            tipo: 'USD',
+            concepto: 'Inicial'
+          });
+        }
         
-        schedule.push({
-          numero: i,
-          monto: montoTotal,
-          tipo: 'USD',
-          concepto: esEspecial ? `Cuota ${i} + Especial` : `Cuota ${i}`
-        });
+        // Para Plan EI-12: cuotas especiales en meses 3, 6 y 9
+        const mesesEspeciales = selectedPlan.id === 'plan-ei-12' ? [3, 6, 9] : [];
+        
+        for (let i = 1; i <= calculation.cuotas; i++) {
+          const cuotaRegular = calculation.cuotaMensual || calculation.cuotaRegular;
+          const esEspecial = mesesEspeciales.includes(i);
+          const montoTotal = esEspecial
+            ? cuotaRegular + (calculation.cuotaEspecial || 0)
+            : cuotaRegular;
+          
+          schedule.push({
+            numero: i,
+            monto: montoTotal,
+            tipo: 'USD',
+            concepto: esEspecial ? `Cuota ${i} + Especial` : `Cuota ${i}`
+          });
+        }
       }
     }
     
