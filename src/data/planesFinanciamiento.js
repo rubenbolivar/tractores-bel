@@ -532,6 +532,84 @@ export const planesFinanciamiento = [
       };
     }
   },
+  {
+    id: 'llevatelo-facil',
+    nombre: 'Llévatelo Fácil',
+    slug: 'llevatelo-facil',
+    descripcion: '10 cuotas iguales sin inicial',
+    tipo: 'financiado',
+    icono: 'Zap',
+    color: 'yellow',
+    inicial: 0,
+    cuotas: 10,
+    ventajas: [
+      'Sin inicial requerida',
+      'Solo 10 cuotas',
+      'Proceso rápido y simple',
+      'Cuotas iguales'
+    ],
+    desventajas: [
+      'Recargo del 10%',
+      'IGTF no incluido'
+    ],
+    requisitos: [
+      'Cédula de identidad o RIF',
+      'Referencias personales',
+      'Comprobante de domicilio'
+    ],
+    formula: 'Precio base + 10% dividido en 10 cuotas iguales',
+    // Datos específicos por modelo
+    datosModelo: {
+      'bel50': { precioBase: 14970, precioFinal: 16467.00, cuotaMensual: 1646.70 },
+      'bel60': { precioBase: 21840, precioFinal: 24024.00, cuotaMensual: 2402.40 },
+      'bel75': { precioBase: 23902, precioFinal: 26292.20, cuotaMensual: 2629.22 },
+      'bel90': { precioBase: 33162, precioFinal: 36478.20, cuotaMensual: 3647.82 },
+      'bel105': { precioBase: 36490, precioFinal: 40139.00, cuotaMensual: 4013.90 },
+      'bel110': { precioBase: 43080, precioFinal: 47388.00, cuotaMensual: 4738.80 },
+      'bel140': { precioBase: 49990, precioFinal: 54989.00, cuotaMensual: 5498.90 },
+      'bel150': { precioBase: 71184, precioFinal: 78302.40, cuotaMensual: 7830.24 },
+      'bel220': { precioBase: 92226, precioFinal: 101448.60, cuotaMensual: 10144.86 }
+    },
+    calcular: function(precioBase, tractorId) {
+      const datos = this.datosModelo?.[tractorId];
+      
+      if (!datos) {
+        // Fallback
+        const precioFinal = precioBase * 1.10;
+        const cuotaMensual = precioFinal / 10;
+        
+        return {
+          precioBase,
+          precioFinal,
+          inicial: 0,
+          cuotas: 10,
+          cuotaMensual,
+          recargo: precioBase * 0.10,
+          totalAPagar: precioFinal,
+          desglose: [
+            { concepto: 'Precio Base', monto: precioBase },
+            { concepto: 'Recargo (10%)', monto: precioBase * 0.10 },
+            { concepto: '10 Cuotas iguales', monto: cuotaMensual, cantidad: 10 }
+          ]
+        };
+      }
+      
+      return {
+        precioBase: datos.precioBase,
+        precioFinal: datos.precioFinal,
+        inicial: 0,
+        cuotas: 10,
+        cuotaMensual: datos.cuotaMensual,
+        recargo: datos.precioFinal - datos.precioBase,
+        totalAPagar: datos.precioFinal,
+        desglose: [
+          { concepto: 'Precio Base', monto: datos.precioBase },
+          { concepto: 'Recargo (10%)', monto: datos.precioFinal - datos.precioBase },
+          { concepto: '10 Cuotas iguales', monto: datos.cuotaMensual, cantidad: 10 }
+        ]
+      };
+    }
+  }
 ];
 
 // Función helper para obtener un plan por slug
