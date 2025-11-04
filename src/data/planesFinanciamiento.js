@@ -435,47 +435,77 @@ export const planesFinanciamiento = [
     id: 'llevatelo-fiao',
     nombre: 'Llévatelo FIAO',
     slug: 'llevatelo-fiao',
-    descripcion: 'Inicial 40% en 6 pagos + 12 cuotas del 5%',
+    descripcion: 'Inicial 50% en 6 pagos + 12 cuotas iguales',
     tipo: 'financiado',
     icono: 'Handshake',
     color: 'teal',
-    inicial: 0.40,
+    inicial: 0.50,
     cuotas: 12,
     ventajas: [
       'Inicial fraccionada en 6 pagos',
       'Entrega después de inicial',
-      'Cuotas fijas del 5%',
+      'Cuotas iguales',
       'Proceso simplificado'
     ],
     desventajas: [
-      'Requiere 40% de inicial',
+      'Requiere 50% de inicial',
       'Entrega después de 6 pagos',
-      'IVA e IGTF no incluidos'
+      'IGTF no incluido'
     ],
     requisitos: [
-      'Afiliación + 5 pagos (40%)',
+      'Inicial 50% en 6 pagos',
       'Referencias personales',
       'Comprobante de domicilio'
     ],
-    formula: 'Inicial 40% (6 pagos) + 12 cuotas del 5% cada una',
-    calcular: (precioBase) => {
-      const inicial = precioBase * 0.40;
-      const pagoInicial = inicial / 6;
-      const cuotaMensual = precioBase * 0.05;
+    formula: 'Inicial 50% en 6 partes + 12 cuotas iguales',
+    // Datos específicos por modelo
+    datosModelo: {
+      'bel50': { precioFinal: 21634.53, inicial: 10817.27, pagoInicial: 1802.88, cuotaMensual: 901.44 },
+      'bel60': { precioFinal: 31563.00, inicial: 15781.50, pagoInicial: 2630.25, cuotaMensual: 1315.13 },
+      'bel75': { precioFinal: 34542.98, inicial: 17271.49, pagoInicial: 2878.58, cuotaMensual: 1439.29 },
+      'bel90': { precioFinal: 47925.47, inicial: 23962.73, pagoInicial: 3993.79, cuotaMensual: 1996.89 },
+      'bel105': { precioFinal: 52735.07, inicial: 26367.53, pagoInicial: 4394.59, cuotaMensual: 2197.29 },
+      'bel110': { precioFinal: 62258.88, inicial: 31129.44, pagoInicial: 5188.24, cuotaMensual: 2594.12 },
+      'bel140': { precioFinal: 72248.17, inicial: 36124.08, pagoInicial: 6020.68, cuotaMensual: 3010.34 },
+      'bel150': { precioFinal: 102874.57, inicial: 51437.28, pagoInicial: 8572.88, cuotaMensual: 4286.44 },
+      'bel220': { precioFinal: 133284.31, inicial: 66642.15, pagoInicial: 11107.03, cuotaMensual: 5553.51 }
+    },
+    calcular: function(precioBase, tractorId) {
+      const datos = this.datosModelo?.[tractorId];
+      
+      if (!datos) {
+        // Fallback
+        const inicial = precioBase * 0.50;
+        const pagoInicial = inicial / 6;
+        const cuotaMensual = inicial / 12;
+        
+        return {
+          precioBase,
+          inicial,
+          pagoInicial,
+          cuotas: 12,
+          cuotaMensual,
+          totalAPagar: precioBase,
+          desglose: [
+            { concepto: 'Inicial en 6 pagos (50%)', monto: pagoInicial, cantidad: 6 },
+            { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de inicial' },
+            { concepto: '12 Cuotas iguales', monto: cuotaMensual, cantidad: 12 }
+          ]
+        };
+      }
       
       return {
-        precioBase,
-        inicial,
-        pagosIniciales: 6,
-        pagoInicial,
+        precioBase: datos.precioFinal,
+        inicial: datos.inicial,
+        pagoInicial: datos.pagoInicial,
         cuotas: 12,
-        cuotaMensual,
-        totalAPagar: precioBase,
+        cuotaMensual: datos.cuotaMensual,
+        totalAPagar: datos.precioFinal,
+        plazoTotal: 18,
         desglose: [
-          { concepto: 'Afiliación + 5 pagos (40%)', monto: pagoInicial, cantidad: 6 },
-          { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de inicial' },
-          { concepto: '12 Cuotas del 5%', monto: cuotaMensual, cantidad: 12 },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
+          { concepto: 'Inicial en 6 pagos (50%)', monto: datos.pagoInicial, cantidad: 6, nota: 'Pre-entrega' },
+          { concepto: 'Entrega del tractor', monto: 0, nota: 'Después de pagar inicial' },
+          { concepto: '12 Cuotas iguales', monto: datos.cuotaMensual, cantidad: 12, nota: 'Post-entrega' }
         ]
       };
     }
