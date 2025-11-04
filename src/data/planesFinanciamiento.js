@@ -140,7 +140,7 @@ export const planesFinanciamiento = [
     id: 'plan-ei-12',
     nombre: 'Plan Entrega Inmediata 12',
     slug: 'entrega-inmediata-12',
-    descripcion: 'Inicial 40% + 12 cuotas + 3 especiales',
+    descripcion: 'Inicial 40% + 12 cuotas + 3 especiales (meses 3, 6 y 9)',
     tipo: 'financiado',
     icono: 'TrendingUp',
     color: 'purple',
@@ -151,39 +151,69 @@ export const planesFinanciamiento = [
       'Entrega inmediata',
       'Inicial accesible del 40%',
       '15 pagos en total',
-      'Sin intereses'
+      'Cuotas especiales en meses 3, 6 y 9'
     ],
     desventajas: [
       'Requiere inicial del 40%',
-      'Cuotas especiales adicionales',
-      'IVA e IGTF no incluidos'
+      'Cuotas especiales se suman a regulares',
+      'IGTF no incluido'
     ],
     requisitos: [
       'Inicial del 40%',
       'Referencias comerciales',
       'Comprobante de ingresos'
     ],
-    formula: 'Inicial 40% + 60% en 12 cuotas + 3 especiales',
-    calcular: (precioBase) => {
-      const inicial = precioBase * 0.40;
-      const saldoFinanciar = precioBase * 0.60;
-      const cuotaRegular = saldoFinanciar / 12;
-      const cuotaEspecial = saldoFinanciar * 0.05;
+    formula: 'Inicial 40% + 12 cuotas regulares + 3 especiales (meses 3, 6, 9)',
+    // Datos específicos por modelo
+    datosModelo: {
+      'bel50': { precioFinal: 26125.53, inicial: 10450.21, cuotaRegular: 870.85, cuotaEspecial: 1741.70 },
+      'bel60': { precioFinal: 38115.00, inicial: 15246.00, cuotaRegular: 1270.50, cuotaEspecial: 2541.00 },
+      'bel75': { precioFinal: 41713.59, inicial: 16685.43, cuotaRegular: 1390.45, cuotaEspecial: 2780.91 },
+      'bel90': { precioFinal: 57874.07, inicial: 23149.63, cuotaRegular: 1929.14, cuotaEspecial: 3858.27 },
+      'bel105': { precioFinal: 63682.07, inicial: 25472.83, cuotaRegular: 2122.74, cuotaEspecial: 4245.47 },
+      'bel110': { precioFinal: 75188.13, inicial: 30075.25, cuotaRegular: 2506.27, cuotaEspecial: 5012.54 },
+      'bel140': { precioFinal: 87272.50, inicial: 34909.00, cuotaRegular: 2909.08, cuotaEspecial: 5818.17 },
+      'bel150': { precioFinal: 124249.20, inicial: 49699.68, cuotaRegular: 4141.64, cuotaEspecial: 8283.28 },
+      'bel220': { precioFinal: 160948.79, inicial: 64379.51, cuotaRegular: 5364.96, cuotaEspecial: 10729.92 }
+    },
+    calcular: function(precioBase, tractorId) {
+      const datos = this.datosModelo?.[tractorId];
+      
+      if (!datos) {
+        // Fallback si no hay datos específicos
+        const inicial = precioBase * 0.40;
+        const saldoFinanciar = precioBase * 0.60;
+        const cuotaRegular = saldoFinanciar / 12;
+        const cuotaEspecial = saldoFinanciar * 0.05;
+        
+        return {
+          precioBase,
+          inicial,
+          cuotas: 12,
+          cuotaMensual: cuotaRegular,
+          cuotasEspeciales: 3,
+          cuotaEspecial,
+          totalAPagar: precioBase,
+          desglose: [
+            { concepto: 'Inicial (40%)', monto: inicial },
+            { concepto: '12 Cuotas regulares', monto: cuotaRegular, cantidad: 12 },
+            { concepto: '3 Cuotas especiales', monto: cuotaEspecial, cantidad: 3, nota: 'Meses 3, 6 y 9' }
+          ]
+        };
+      }
       
       return {
-        precioBase,
-        inicial,
-        saldoFinanciar,
+        precioBase: datos.precioFinal,
+        inicial: datos.inicial,
         cuotas: 12,
-        cuotaMensual: cuotaRegular,
+        cuotaMensual: datos.cuotaRegular,
         cuotasEspeciales: 3,
-        cuotaEspecial,
-        totalAPagar: precioBase,
+        cuotaEspecial: datos.cuotaEspecial,
+        totalAPagar: datos.precioFinal,
         desglose: [
-          { concepto: 'Inicial (40%)', monto: inicial },
-          { concepto: '12 Cuotas regulares', monto: cuotaRegular, cantidad: 12 },
-          { concepto: '3 Cuotas especiales', monto: cuotaEspecial, cantidad: 3 },
-          { concepto: 'IVA e IGTF', monto: 0, nota: 'NO incluidos - Se pagan aparte' }
+          { concepto: 'Inicial (40%)', monto: datos.inicial },
+          { concepto: '12 Cuotas regulares', monto: datos.cuotaRegular, cantidad: 12 },
+          { concepto: '3 Cuotas especiales', monto: datos.cuotaEspecial, cantidad: 3, nota: 'Se pagan en meses 3, 6 y 9 (se suman a cuota regular)' }
         ]
       };
     }
